@@ -75,11 +75,11 @@ function refreshTeamFields() {
   rows.forEach((row, index) => {
     const number = index + 1;
     const input = row.querySelector("input");
-    input.setAttribute("aria-label", `Name for team ${number}`);
-    input.placeholder = `Team ${number}`;
+    input.setAttribute("aria-label", `Nome della squadra ${number}`);
+    input.placeholder = `Squadra ${number}`;
     const remove = row.querySelector("button");
     remove.hidden = rows.length === 1;
-    remove.setAttribute("aria-label", `Remove team ${number}`);
+    remove.setAttribute("aria-label", `Rimuovi la squadra ${number}`);
   });
 }
 
@@ -115,7 +115,7 @@ function renderGame() {
   get("new-game").hidden = !game;
   get("progress").value = played.length;
   get("progress").max = clues.length;
-  get("progress-label").textContent = `${played.length} / ${clues.length} played`;
+  get("progress-label").textContent = `${played.length} / ${clues.length} caselle giocate`;
 
   for (const clue of clues) {
     const tile = tiles[clue.id];
@@ -123,16 +123,16 @@ function renderGame() {
     tile.disabled = !game || used;
     tile.classList.toggle("played", used);
     tile.textContent = used ? "✓" : clue.value;
-    tile.setAttribute("aria-label", `${clue.category}, ${clue.value} points${used ? ", played" : ""}`);
+    tile.setAttribute("aria-label", `${clue.category}, ${clue.value} punti${used ? ", già giocata" : ""}`);
   }
   if (!game) return;
 
   if (finished) {
     const highest = Math.max(...game.teams.map((team) => team.score));
     const leaders = game.teams.filter((team) => team.score === highest).map((team) => team.name);
-    get("turn").textContent = leaders.length === 1 ? `${leaders[0]} wins!` : `Tie: ${leaders.join(", ")}`;
+    get("turn").textContent = leaders.length === 1 ? `Vince ${leaders[0]}!` : `Parità tra ${leaders.join(", ")}`;
   } else {
-    get("turn").textContent = `Up next: ${game.teams[game.turn].name}`;
+    get("turn").textContent = `Tocca a ${game.teams[game.turn].name}`;
   }
 
   get("scores").replaceChildren(...game.teams.map((team, index) => {
@@ -153,8 +153,8 @@ function openClue(clue) {
   activeClue = clue;
   revealed = false;
   get("clue-category").textContent = clue.category;
-  get("clue-value").textContent = `${clue.value} points`;
-  get("clue-team").textContent = `Playing: ${game.teams[game.turn].name}`;
+  get("clue-value").textContent = `${clue.value} punti`;
+  get("clue-team").textContent = `In gioco: ${game.teams[game.turn].name}`;
   get("question").textContent = clue.question;
   get("clue-target").hidden = false;
   get("revealed").hidden = true;
@@ -169,8 +169,8 @@ function revealAnswer() {
   revealed = true;
   get("revealed-question").textContent = activeClue.question;
   get("answer").textContent = activeClue.answer;
-  get("wrong").textContent = `Wrong −${activeClue.value}`;
-  get("correct").textContent = `Correct +${activeClue.value}`;
+  get("wrong").textContent = `Sbagliata −${activeClue.value}`;
+  get("correct").textContent = `Esatta +${activeClue.value}`;
   get("clue-target").hidden = true;
   get("revealed").hidden = false;
   get("score-actions").hidden = false;
@@ -189,7 +189,7 @@ function scoreClue(multiplier) {
   saveGame();
   renderGame();
   clueDialog.close();
-  get("announcement").textContent = `${team.name} ${multiplier > 0 ? "gains" : "loses"} ${value} points. ${get("turn").textContent}`;
+  get("announcement").textContent = `${team.name} ${multiplier > 0 ? "guadagna" : "perde"} ${value} punti. ${get("turn").textContent}`;
   (tiles.find((tile) => !tile.disabled) ?? get("turn")).focus();
 }
 

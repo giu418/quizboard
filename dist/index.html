@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A host-led trivia game with a five-category board and live team scoring.">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>Quizboard — Trivia Game</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="questions.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./index.html" aria-label="Quizboard home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        Quizboard
+      </a>
+      <button class="button quiet" id="new-game" type="button"><span aria-hidden="true">↻</span> New game</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="intro">
+      <div>
+        <h1>Game board</h1>
+        <p>Pick a tile, reveal the answer, and score the turn.</p>
+      </div>
+      <div class="progress">
+        <span id="progress-label">0 / 25 played</span>
+        <progress id="progress" value="0" max="25" aria-labelledby="progress-label"></progress>
+      </div>
+    </div>
+
+    <div class="game-layout">
+      <section class="board" id="board" aria-label="Trivia categories"></section>
+      <aside class="sidebar" aria-label="Teams and scoring">
+        <section class="panel" id="setup">
+          <h2 id="setup-title" tabindex="-1">Set up teams</h2>
+          <p>Add players or teams in turn order.</p>
+          <form id="team-form">
+            <div class="team-inputs" id="team-inputs"></div>
+            <button class="button add" id="add-team" type="button"><span aria-hidden="true">+</span> Add a team</button>
+            <button class="button primary" type="submit">Start game</button>
+          </form>
+        </section>
+        <section class="panel" id="scoreboard" hidden>
+          <h2>Scoreboard</h2>
+          <p id="turn" tabindex="-1"></p>
+          <ol class="scores" id="scores"></ol>
+        </section>
+        <section class="panel rules">
+          <h2>Scoring</h2>
+          <div><span class="rule-sign plus" aria-hidden="true">+</span> Correct adds the tile value</div>
+          <div><span class="rule-sign minus" aria-hidden="true">−</span> Wrong subtracts the tile value</div>
+        </section>
+      </aside>
+    </div>
+    <p class="sr-only" id="announcement" role="status"></p>
+  </main>
+
+  <dialog class="clue-dialog" id="clue-dialog" aria-labelledby="clue-heading">
+    <div class="clue-header">
+      <span id="clue-category"></span>
+      <strong id="clue-value"></strong>
+    </div>
+    <div class="clue-body">
+      <div class="clue-team" id="clue-team"></div>
+      <button class="clue-target" id="clue-target" type="button">
+        <span class="eyebrow" id="clue-heading">Question</span>
+        <span class="question" id="question"></span>
+        <span class="reveal">Click to reveal answer</span>
+      </button>
+      <div class="revealed" id="revealed" hidden>
+        <p class="question" id="revealed-question"></p>
+        <p class="eyebrow" id="answer-heading" tabindex="-1">Answer</p>
+        <p class="answer" id="answer"></p>
+      </div>
+      <div class="score-actions" id="score-actions" hidden>
+        <button class="button wrong" id="wrong" type="button"></button>
+        <button class="button correct" id="correct" type="button"></button>
+      </div>
+      <button class="button back" id="close-clue" type="button">Back to board</button>
+    </div>
+  </dialog>
+
+  <dialog class="reset-dialog" id="reset-dialog" aria-labelledby="reset-heading">
+    <h2 id="reset-heading">Start a new game?</h2>
+    <p>This clears the scores and resets all 25 tiles.</p>
+    <div class="reset-actions">
+      <button class="button quiet" id="cancel-reset" type="button" autofocus>Keep playing</button>
+      <button class="button primary" id="confirm-reset" type="button">New game</button>
+    </div>
+  </dialog>
+</body>
+</html>

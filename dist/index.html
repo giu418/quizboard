@@ -3,101 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Un quiz a squadre con cinque categorie e punteggi in tempo reale.">
-  <meta name="theme-color" content="#f4f2ec">
-  <title>Quizboard — Quiz a squadre</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="questions.js" defer></script>
+  <meta name="description" content="La serata giochi di Quizboard. Cinque manche a squadre, un tabellone condiviso e una classifica.">
+  <meta name="theme-color" content="#151322">
+  <title>Serata giochi · Quizboard</title>
+  <link rel="stylesheet" href="party.css">
   <script src="mintaka.js" defer></script>
-  <script src="game.js" defer></script>
+  <script src="party-data.js" defer></script>
+  <script src="party.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="./index.html" aria-label="Quizboard, pagina iniziale">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./index.html">
+        <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         Quizboard
       </a>
-      <button class="button quiet" id="new-game" type="button"><span aria-hidden="true">↻</span> Nuova partita</button>
+      <nav aria-label="Modalità di gioco">
+        <a class="standalone" href="./quiz.html">Solo quiz <span aria-hidden="true">▦</span></a>
+        <button type="button" class="button secondary reset" data-action="ask-reset" id="reset-button" hidden>Nuova serata</button>
+      </nav>
     </div>
   </header>
 
-  <main class="shell">
-    <div class="intro">
-      <div>
-        <h1>Tabellone</h1>
-        <p>Scegli una casella, scopri la risposta e assegna i punti.</p>
-      </div>
-      <div class="progress">
-        <span id="progress-label">0 / 25 caselle giocate</span>
-        <progress id="progress" value="0" max="25" aria-labelledby="progress-label"></progress>
-      </div>
-    </div>
+  <main class="wrap" id="app"></main>
 
-    <div class="game-layout">
-      <section class="board" id="board" aria-label="Categorie del quiz"></section>
-      <aside class="sidebar" aria-label="Squadre e punteggi">
-        <section class="panel" id="setup">
-          <h2 id="setup-title" tabindex="-1">Prepara le squadre</h2>
-          <p>Aggiungi giocatori o squadre nell’ordine in cui giocheranno.</p>
-          <form id="team-form">
-            <div class="team-inputs" id="team-inputs"></div>
-            <button class="button add" id="add-team" type="button"><span aria-hidden="true">+</span> Aggiungi una squadra</button>
-            <button class="button primary" type="submit">Inizia la partita</button>
-          </form>
-        </section>
-        <section class="panel" id="scoreboard" hidden>
-          <h2>Punteggi</h2>
-          <p id="turn" tabindex="-1"></p>
-          <ol class="scores" id="scores"></ol>
-        </section>
-        <section class="panel rules">
-          <h2>Come si assegnano i punti</h2>
-          <div><span class="rule-sign plus" aria-hidden="true">+</span> Risposta esatta, aggiungi i punti</div>
-          <div><span class="rule-sign minus" aria-hidden="true">−</span> Risposta sbagliata, sottrai i punti</div>
-        </section>
-      </aside>
-    </div>
-    <footer class="credits" id="mintaka-credit">
-      Domande selezionate e adattate da <a href="https://github.com/amazon-science/mintaka">Mintaka</a>,
-      di Priyanka Sen, Alham Fikri Aji e Amir Saffari (2022).
-      Licenza <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
-    </footer>
-    <p class="sr-only" id="announcement" role="status"></p>
-  </main>
-
-  <dialog class="clue-dialog" id="clue-dialog" aria-labelledby="clue-heading">
-    <div class="clue-header">
-      <span id="clue-category"></span>
-      <strong id="clue-value"></strong>
-    </div>
-    <div class="clue-body">
-      <div class="clue-team" id="clue-team"></div>
-      <button class="clue-target" id="clue-target" type="button">
-        <span class="eyebrow" id="clue-heading">Domanda</span>
-        <span class="question" id="question"></span>
-        <span class="reveal">Mostra la risposta</span>
-      </button>
-      <div class="revealed" id="revealed" hidden>
-        <p class="question" id="revealed-question"></p>
-        <p class="eyebrow" id="answer-heading" tabindex="-1">Risposta</p>
-        <p class="answer" id="answer"></p>
-      </div>
-      <div class="score-actions" id="score-actions" hidden>
-        <button class="button wrong" id="wrong" type="button"></button>
-        <button class="button correct" id="correct" type="button"></button>
-      </div>
-      <button class="button back" id="close-clue" type="button">Torna al tabellone</button>
-    </div>
-  </dialog>
-
-  <dialog class="reset-dialog" id="reset-dialog" aria-labelledby="reset-heading">
-    <h2 id="reset-heading">Iniziare una nuova partita?</h2>
-    <p>I punteggi verranno azzerati e tutte le 25 caselle torneranno disponibili.</p>
-    <div class="reset-actions">
-      <button class="button quiet" id="cancel-reset" type="button" autofocus>Continua a giocare</button>
-      <button class="button primary" id="confirm-reset" type="button">Nuova partita</button>
-    </div>
-  </dialog>
+  <footer class="wrap credits">
+    <p>Domande del tabellone selezionate e adattate da <a href="https://github.com/amazon-science/mintaka">Mintaka</a> di Priyanka Sen, Alham Fikri Aji e Amir Saffari, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+  </footer>
+  <dialog id="card-dialog" aria-labelledby="card-title"></dialog>
+  <p id="live" class="sr-only" role="status"></p>
 </body>
 </html>

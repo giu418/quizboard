@@ -84,6 +84,8 @@ progress::-moz-progress-bar { background: var(--accent); }
 .score span { min-width: 0; overflow-wrap: anywhere; }
 .score strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .score.active { background: var(--accent-light); border-color: #bbaaf0; }
+.credits { margin-top: 20px; color: var(--muted); font-size: .875rem; line-height: 1.5; }
+.credits a { color: var(--accent); }
 
 dialog { width: min(620px, calc(100% - 28px)); max-height: calc(100% - 28px); padding: 0; border: 0; border-radius: 18px; color: var(--ink); background: var(--paper); box-shadow: 0 24px 90px #17142c69; }
 dialog::backdrop { background: #1e1b3aba; }

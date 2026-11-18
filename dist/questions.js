@@ -1,4 +1,4 @@
-const categories = [
+const originalCategories = [
   {
     name: "Geografia",
     symbol: "◎",

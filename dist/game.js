@@ -4,30 +4,28 @@ const resetDialog = get("reset-dialog");
 const teamInputs = get("team-inputs");
 const storageKey = "quizboard-game-v1";
 
-const clues = categories.flatMap(({ name, clues: questions }, column) =>
-  questions.map(([question, answer], row) => ({
-    id: column * questions.length + row,
-    category: name,
-    value: (row + 1) * 100,
-    question,
-    answer,
-  })),
-);
+const questionSets = { original: originalCategories, mintaka: mintakaCategories };
+const defaultQuestionSet = "mintaka";
 
 let game = loadGame();
 let activeClue = null;
 let revealed = false;
-const tiles = [];
+let clues;
+let tiles;
 
 function loadGame() {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    if (saved && Array.isArray(saved.teams) && saved.teams.length &&
+    const questionSet = saved?.questionSet ?? "original";
+    if (saved && Object.hasOwn(questionSets, questionSet) &&
+      Array.isArray(saved.teams) && saved.teams.length &&
       saved.teams.every((team) => team && typeof team.name === "string" && Number.isInteger(team.score)) &&
       Number.isInteger(saved.turn) && saved.turn >= 0 && saved.turn < saved.teams.length &&
-      Array.isArray(saved.played) && new Set(saved.played).size === saved.played.length &&
-      saved.played.every((id) => Number.isInteger(id) && id >= 0 && id < clues.length)) {
-      return saved;
+      Array.isArray(saved.played) && new Set(saved.played).size === saved.played.length) {
+      const clueCount = questionSets[questionSet].reduce((total, category) => total + category.clues.length, 0);
+      if (saved.played.every((id) => Number.isInteger(id) && id >= 0 && id < clueCount)) {
+        return { ...saved, questionSet };
+      }
     }
   } catch {
     // Keep the game playable when browser storage is unavailable.
@@ -45,8 +43,12 @@ function saveGame() {
 }
 
 function buildBoard() {
-  let clueIndex = 0;
-  for (const category of categories) {
+  const board = get("board");
+  const questionSet = game?.questionSet ?? defaultQuestionSet;
+  board.replaceChildren();
+  clues = [];
+  tiles = [];
+  for (const category of questionSets[questionSet]) {
     const column = document.createElement("section");
     column.className = "category";
     const heading = document.createElement("h2");
@@ -57,17 +59,19 @@ function buildBoard() {
     heading.append(symbol, category.name);
     column.append(heading);
 
-    for (const _ of category.clues) {
-      const clue = clues[clueIndex++];
+    category.clues.forEach(([question, answer], row) => {
+      const clue = { id: clues.length, category: category.name, value: (row + 1) * 100, question, answer };
+      clues.push(clue);
       const tile = document.createElement("button");
       tile.type = "button";
       tile.className = "tile";
       tile.addEventListener("click", () => openClue(clue));
       tiles.push(tile);
       column.append(tile);
-    }
-    get("board").append(column);
+    });
+    board.append(column);
   }
+  get("mintaka-credit").hidden = questionSet !== "mintaka";
 }
 
 function refreshTeamFields() {
@@ -200,7 +204,7 @@ get("team-form").addEventListener("submit", (event) => {
     name: input.value.trim() || input.placeholder,
     score: 0,
   }));
-  game = { teams, turn: 0, played: [] };
+  game = { teams, turn: 0, played: [], questionSet: defaultQuestionSet };
   saveGame();
   renderGame();
   get("announcement").textContent = get("turn").textContent;
@@ -219,6 +223,7 @@ get("cancel-reset").addEventListener("click", () => resetDialog.close());
 get("confirm-reset").addEventListener("click", () => {
   game = null;
   saveGame();
+  buildBoard();
   renderGame();
   resetDialog.close();
   get("setup-title").focus();

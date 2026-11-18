@@ -1,10 +1,21 @@
+const partyStorage = "quizboard-party-v1";
+const partyVersion = 2;
 const partyRounds = [
   { id: "mime", title: "Cinema muto", short: "Mima", icon: "✦", format: "45 secondi", summary: "Mima il titolo di un film.", rules: "A turno, un giocatore guarda il titolo in privato e lo mima senza parlare. La squadra ha 45 secondi per indovinare più film possibile. Ogni titolo indovinato vale un punto.", seconds: 45, hand: 8 },
-  { id: "quiz", title: "Tabellone quiz", short: "Quiz", icon: "▦", format: "1–5 punti", summary: "Scegli una categoria e una casella.", rules: "Ogni squadra sceglie due caselle, una per giro. Scegli una casella da 1 a 5 punti. Una risposta esatta aggiunge il valore, una sbagliata lo sottrae." },
-  { id: "song", title: "La parola mancante", short: "Musica", icon: "♫", format: "5 parole", summary: "Ascolta e completa il testo.", rules: "Tutte le squadre ascoltano lo stesso estratto. Scrivono su carta le cinque parole mancanti, numerate. Quando hanno consegnato, chi conduce rivela le risposte e segna un punto per ogni parola giusta." },
+  { id: "quiz", title: "Tabellone quiz", short: "Quiz", icon: "▦", format: "1–5 punti", summary: "Gioca tutte le caselle del tabellone.", rules: "Le squadre scelgono a turno una casella da 1 a 5 punti, fino a esaurire il tabellone. Una risposta esatta aggiunge il valore, una sbagliata lo sottrae." },
+  { id: "song", title: "La parola mancante", short: "Musica", icon: "♫", suspended: true },
   { id: "flash", title: "Vero o falso lampo", short: "Lampo", icon: "ϟ", format: "60 secondi", summary: "Rispondi prima che scada il tempo.", rules: "Ogni squadra ha 60 secondi. Una risposta corretta vale +1, una sbagliata −1. Si può passare senza perdere punti.", seconds: 60, hand: 16 },
-  { id: "proverbs", title: "Proverbi al volo", short: "Proverbi", icon: "❞", format: "45 secondi", summary: "Finisci un proverbio dopo l’altro.", rules: "Completa a voce più proverbi possibile in 45 secondi. Chi conduce può mostrare la soluzione e accettare le varianti comuni. Ogni proverbio completato vale un punto.", seconds: 45, hand: 10 },
+  { id: "proverbs", title: "Proverbi al volo", short: "Proverbi", icon: "❞", format: "60 secondi", summary: "Completa otto proverbi di fila.", rules: "La squadra ha 60 secondi per completare otto proverbi di fila. Al primo errore ricomincia dal primo proverbio con il tempo che resta. L’intera sequenza vale 8 punti.", seconds: 60, hand: 8 },
 ];
+
+function activePartyTeam(party) {
+  return (party.round + party.play.turn) % party.teams.length;
+}
+
+function timedPartyCard(party, bank) {
+  const { id, hand } = partyRounds[party.round];
+  return bank[party.draw[id][party.play.turn * hand + party.play.card]];
+}
 
 const mimeCards = [
   "Titanic", "Il re leone", "Jurassic Park", "Alla ricerca di Nemo", "Spider-Man", "Frozen", "Ghostbusters", "King Kong",
@@ -117,25 +128,6 @@ const proverbCards = [
   ["Non c’è due…", "senza tre"], ["L’ospite è come il pesce…", "dopo tre giorni puzza"],
   ["La notte…", "porta consiglio"], ["Patti chiari…", "amicizia lunga"],
   ["Campa cavallo…", "che l’erba cresce"], ["Chi disprezza…", "compra"],
-];
-
-const songCards = [
-  {
-    recording: "audio/estratto-1.mp3",
-    title: "La donna è mobile",
-    attribution: "Enrico Caruso, 1908 · Giuseppe Verdi e Francesco Maria Piave",
-    source: "https://commons.wikimedia.org/wiki/File:La_Donna_E_Mobile_Rigoletto.ogg",
-    lines: ["La # è #", "Qual # al #", "Muta #"],
-    answers: ["donna", "mobile", "piuma", "vento", "d’accento"],
-  },
-  {
-    recording: "audio/estratto-2.mp3",
-    title: "Una furtiva lagrima",
-    attribution: "Enrico Caruso e Salvatore Cottone, 1902 · Gaetano Donizetti e Felice Romani",
-    source: "https://commons.wikimedia.org/wiki/File:Una_furtiva_lagrima_(1902).opus",
-    lines: ["Una # #", "negli # suoi #", "quelle # giovani…"],
-    answers: ["furtiva", "lagrima", "occhi", "spuntò", "festose"],
-  },
 ];
 
 // Adapted from the Italian Mintaka train split (CC BY 4.0). Source IDs follow each clue.

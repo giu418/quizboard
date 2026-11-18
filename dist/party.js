@@ -1,10 +1,9 @@
 const app = document.getElementById("app");
 const dialog = document.getElementById("card-dialog");
 const live = document.getElementById("live");
-const partyStorage = "quizboard-party-v1";
 const minTeams = 2;
 const maxTeams = 4;
-const quizTurns = 2;
+const quizTileCount = mintakaCategories.reduce((count, category) => count + category.clues.length, 0);
 const lookup = new Map(partyRounds.map((round) => [round.id, round]));
 const flashCards = [
   ...flashTrue.map((prompt) => [prompt, true]),
@@ -26,18 +25,40 @@ function readParty() {
   try {
     const saved = JSON.parse(localStorage.getItem(partyStorage));
     if (
-      saved?.version === 1 && Array.isArray(saved.teams) &&
+      [1, partyVersion].includes(saved?.version) && Array.isArray(saved.teams) &&
       saved.teams.length >= minTeams && saved.teams.length <= maxTeams &&
       saved.teams.every((name) => typeof name === "string") &&
       Number.isInteger(saved.round) && partyRounds[saved.round] &&
       ["intro", "play", "results", "final"].includes(saved.phase) &&
       Array.isArray(saved.scores) && Array.isArray(saved.history) &&
       saved.draw && saved.play
-    ) return saved;
+    ) return saved.version === 1 ? migrateParty(saved) : saved;
   } catch {
     // A blocked or unavailable storage does not prevent play.
   }
   return null;
+}
+
+function nextRoundIndex(index) {
+  return partyRounds.findIndex((round, position) => position > index && !round.suspended);
+}
+
+function migrateParty(saved) {
+  const round = partyRounds[saved.round];
+  saved.version = partyVersion;
+  delete saved.draw.song;
+  if (round.suspended && ["intro", "play"].includes(saved.phase)) {
+    saved.round = nextRoundIndex(saved.round);
+    saved.phase = "intro";
+    saved.play = {};
+    saved.scores = saved.teams.map(() => 0);
+  } else if (round.id === "proverbs" && saved.phase === "play") {
+    // An earlier turn used a different hand size, deadline, and scoring rule.
+    saved.phase = "intro";
+    saved.play = {};
+    saved.scores = saved.teams.map(() => 0);
+  }
+  return saved;
 }
 
 function saveParty() {
@@ -69,7 +90,6 @@ function drawCards(teams) {
   return {
     quiz: mintakaCategories.map(({ clues }) => clues.map(() => Math.floor(Math.random() * 2))),
     mime: shuffle(indices(mimeCards.length)).slice(0, teams * lookup.get("mime").hand),
-    song: Math.floor(Math.random() * songCards.length),
     flash: indices(teams).flatMap((index) => {
       const offset = index * halfFlashHand;
       return shuffle([
@@ -86,12 +106,11 @@ function roundNow() {
 }
 
 function teamOnTurn() {
-  return (state.round + state.play.turn) % state.teams.length;
+  return activePartyTeam(state);
 }
 
 function timedCard() {
-  const { id, hand } = roundNow();
-  return timedBanks[id][state.draw[id][state.play.turn * hand + state.play.card]];
+  return timedPartyCard(state, timedBanks[roundNow().id]);
 }
 
 function quizClue(index) {
@@ -121,6 +140,7 @@ function ranked(scores) {
 function totalScores() {
   const totals = state.teams.map(() => 0);
   for (const scores of state.history) {
+    if (!scores) continue;
     for (const entry of ranked(scores)) totals[entry.team] += entry.points;
   }
   return totals;
@@ -156,7 +176,7 @@ function setupView() {
       <div class="hero-copy">
         <p class="kicker">Quizboard a squadre</p>
         <h1>Serata <span>giochi.</span></h1>
-        <p>Cinque manche, un’unica classifica. Riunisci gli amici e giocate sullo stesso schermo.</p>
+        <p>Quattro manche, un’unica classifica. Riunisci gli amici e giocate sullo stesso schermo.</p>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="art-orb"></div>
@@ -170,10 +190,10 @@ function setupView() {
         <h2 class="panel-title">Le manche</h2>
         <ol class="round-list">
           ${partyRounds.map((round) => `
-            <li>
+            <li class="${round.suspended ? "suspended" : ""}">
               ${icon(round)}
-              <div class="round-info"><strong>${round.title}</strong><small>${round.summary}</small></div>
-              <span class="round-format">${round.format}</span>
+              <div class="round-info"><strong>${round.title}</strong><small>${round.suspended ? "In sospeso" : round.summary}</small></div>
+              ${round.suspended ? "" : `<span class="round-format">${round.format}</span>`}
             </li>`).join("")}
         </ol>
       </section>
@@ -185,10 +205,16 @@ function setupView() {
     </div>`;
 }
 
+function sessionRoundIndexes() {
+  return indices(partyRounds.length).filter((index) => !partyRounds[index].suspended || state.history[index]);
+}
+
 function roadmap() {
-  return `<ol class="roadmap" aria-label="Avanzamento delle manche">
-    ${partyRounds.map((round, index) => {
-      const done = index < state.history.length;
+  const rounds = sessionRoundIndexes();
+  return `<ol class="roadmap" style="--steps: ${rounds.length}" aria-label="Avanzamento delle manche">
+    ${rounds.map((index) => {
+      const round = partyRounds[index];
+      const done = Boolean(state.history[index]);
       return `<li class="tone-${round.id}${done ? " done" : ""}" ${index === state.round && state.phase !== "final" ? 'aria-current="step"' : ""}><span aria-hidden="true">${done ? "✓" : round.icon}</span>${round.short}${done ? '<span class="sr-only"> completata</span>' : ""}</li>`;
     }).join("")}
   </ol>`;
@@ -196,9 +222,10 @@ function roadmap() {
 
 function roundTitle(title, end = "") {
   const round = roundNow();
+  const rounds = sessionRoundIndexes();
   return `<div class="stage-header">
     <div>
-      <p class="kicker">${state.phase === "final" ? `${partyRounds.length} manche completate` : `Manche ${state.round + 1} di ${partyRounds.length}`}</p>
+      <p class="kicker">${state.phase === "final" ? `${rounds.length} manche completate` : `Manche ${rounds.indexOf(state.round) + 1} di ${rounds.length}`}</p>
       <h1 id="stage-title" tabindex="-1">${title}</h1>
     </div>
     ${end || icon(round)}
@@ -207,7 +234,7 @@ function roundTitle(title, end = "") {
 
 function standings() {
   const totals = totalScores();
-  const individualTurn = state.phase === "play" && roundNow().id !== "song" && state.play.step !== "done";
+  const individualTurn = state.phase === "play" && state.play.step !== "done";
   return `<h2 class="panel-title">Classifica serata</h2>
     <p class="panel-note">Ogni manche assegna punti per piazzamento.</p>
     <ol class="standings">
@@ -239,10 +266,24 @@ function introView() {
     <div class="actions spaced"><button type="button" class="button primary" data-action="begin-round">Inizia la manche</button></div>`;
 }
 
+function cardProgress(round, completed) {
+  const label = round.id === "proverbs" ? "Proverbi corretti di fila" : "Avanzamento del turno";
+  return `<div class="cards-progress">
+    <span>${label}</span>
+    <progress max="${round.hand}" value="${completed}" aria-label="${label}" aria-valuetext="${completed} di ${round.hand}"></progress>
+  </div>`;
+}
+
+function judgeLink() {
+  return '<a class="button secondary" href="./giudice.html" target="_blank" rel="noopener">Apri la scheda del giudice</a>';
+}
+
 function timedView() {
   const round = roundNow();
   const play = state.play;
+  const proverbs = round.id === "proverbs";
   const output = [` ${roundTitle(round.title, timer())} `];
+  if (round.id !== "mime") output.push(cardProgress(round, play.card));
   if (play.step === "ready") {
     output.push(turnLine("Si prepara"));
     output.push(`<p class="turn-count">Turno ${play.turn + 1} di ${state.teams.length}</p>`);
@@ -250,14 +291,15 @@ function timedView() {
       output.push('<p class="stage-copy">Mostra la carta solo a chi mima. Il tempo parte quando la carta viene nascosta.</p>');
       output.push('<div class="actions spaced"><button type="button" class="button primary" data-action="mime-card">Mostra primo titolo</button></div>');
     } else {
-      output.push(`<div class="actions spaced"><button type="button" class="button primary" data-action="start-timer">Avvia ${round.seconds} secondi</button></div>`);
+      if (proverbs) output.push('<p class="stage-copy judge-note">Apri la scheda su una finestra visibile solo al giudice. Il proverbio completo si aggiorna durante il turno.</p>');
+      output.push(`<div class="actions spaced"><button type="button" class="button primary" data-action="start-timer">Avvia ${round.seconds} secondi</button>${proverbs ? judgeLink() : ""}</div>`);
     }
     return output.join("");
   }
 
   if (play.step === "done") {
     const score = state.scores[teamOnTurn()];
-    const label = play.endedBy === "time" ? "Tempo scaduto" : "Turno concluso";
+    const label = play.endedBy === "time" ? "Tempo scaduto" : play.endedBy === "success" ? "Sequenza completata" : "Turno concluso";
     output.push(turnLine(label));
     output.push(`<div class="prompt-card"><p class="prompt">${formatNumber(score)} ${score === 1 ? "punto" : "punti"}</p></div>`);
     const last = play.turn + 1 === state.teams.length;
@@ -267,28 +309,26 @@ function timedView() {
 
   const card = timedCard();
   output.push(turnLine("Tocca a"));
-  const count = `<span class="prompt-note">Carta ${play.card + 1} di ${round.hand}</span>`;
   if (round.id === "mime") {
-    output.push(`<div class="prompt-card">${count}<p class="prompt">Titolo nascosto</p></div>
+    output.push(`<div class="prompt-card"><span class="prompt-note">Carta ${play.card + 1} di ${round.hand}</span><p class="prompt">Titolo nascosto</p></div>
       <div class="actions">
         <button type="button" class="button secondary" data-action="mime-card">Mostra titolo in privato</button>
         <button type="button" class="button positive" data-action="mime-correct" ${play.seen ? "" : "disabled"}>Indovinato +1</button>
         <button type="button" class="button ghost" data-action="pass">Passa</button>
       </div>`);
   } else if (round.id === "flash") {
-    output.push(`<div class="prompt-card">${count}<p class="prompt">${esc(card[0])}</p></div>
+    output.push(`<div class="prompt-card"><p class="prompt">${esc(card[0])}</p></div>
       <div class="actions">
         <button type="button" class="button primary" data-action="flash-true">Vero</button>
         <button type="button" class="button secondary" data-action="flash-false">Falso</button>
         <button type="button" class="button ghost" data-action="pass">Passa</button>
       </div>`);
   } else {
-    output.push(`<div class="prompt-card">${count}<p class="prompt">${esc(card[0])}</p>
-      ${play.revealed ? `<p class="answer-key">${esc(card[1])}</p>` : ""}</div>
+    output.push(`<div class="prompt-card"><p class="prompt">${esc(card[0])}</p></div>
       <div class="actions">
-        <button type="button" class="button positive" data-action="proverb-correct">Completato +1</button>
-        <button type="button" class="button ghost" data-action="pass">Passa</button>
-        ${play.revealed ? "" : '<button type="button" class="button secondary" data-action="proverb-reveal">Mostra soluzione</button>'}
+        <button type="button" class="button positive" data-action="proverb-correct">Corretto</button>
+        <button type="button" class="button negative" data-action="proverb-wrong">Errore · ricomincia</button>
+        ${judgeLink()}
       </div>`);
   }
   output.push(`<p class="feedback" aria-hidden="true">${esc(play.feedback || "")}</p>`);
@@ -300,7 +340,7 @@ function quizView() {
   const taken = state.play.used;
   return `${roundTitle("Tabellone quiz")}
     ${turnLine("Sceglie")}
-    <p class="turn-count">Scelta ${state.play.turn + 1} di ${quizTurns * state.teams.length}</p>
+    <p class="turn-count">Caselle giocate: ${taken.length} di ${quizTileCount}</p>
     <div class="quiz-grid" aria-label="Categorie del quiz">
       ${mintakaCategories.map((category, column) => `
         <section class="quiz-column">
@@ -315,33 +355,8 @@ function quizView() {
     </div>`;
 }
 
-function songView() {
-  const song = songCards[state.draw.song];
-  let blank = 0;
-  return `${roundTitle("La parola mancante")}
-    <p class="stage-copy">${state.play.revealed ? "Spunta una parola per ogni risposta corretta di ciascuna squadra." : "Ascoltate l’estratto e scrivete le cinque parole mancanti. Potete riascoltarlo prima di consegnare."}</p>
-    <audio class="audio" controls preload="metadata" src="${song.recording}" aria-label="Estratto musicale"></audio>
-    <div class="prompt-card song-lines">
-      ${song.lines.map((line) => `<p class="prompt">${esc(line).replace(/#/g, () => `<span class="blank" aria-label="Parola ${++blank}">${blank}</span>`)}</p>`).join("")}
-    </div>
-    ${state.play.revealed ? `
-      <p class="answer-key">${esc(song.title)}</p>
-      <ol class="word-list" aria-label="Parole mancanti">${song.answers.map((answer) => `<li>${esc(answer)}</li>`).join("")}</ol>
-      <div class="song-teams">
-        ${state.teams.map((name, index) => `<fieldset>
-          <legend>${esc(name)} <span id="song-score-${index}">(${state.scores[index]}/5)</span></legend>
-          ${song.answers.map((word, wordIndex) => `<label><input type="checkbox" data-team="${index}" data-word="${wordIndex}" ${state.play.checks[index][wordIndex] ? "checked" : ""}>${esc(word)}</label>`).join("")}
-        </fieldset>`).join("")}
-      </div>
-      <p class="sources"><a href="${song.source}">Registrazione su Wikimedia Commons</a> · ${esc(song.attribution)}</p>
-    ` : ""}
-    <div class="actions spaced">
-      <button type="button" class="button primary" data-action="${state.play.revealed ? "song-finish" : "song-reveal"}">${state.play.revealed ? "Conferma punteggi" : "Svela le parole"}</button>
-    </div>`;
-}
-
 function resultsView(final = false) {
-  const entries = ranked(final ? totalScores() : state.history.at(-1));
+  const entries = ranked(final ? totalScores() : state.history[state.round]);
   const winners = entries.filter((entry) => entry.place === 1).map(({ team }) => state.teams[team]);
   const title = final ? "Classifica finale" : `Risultati · ${roundNow().title}`;
   const outcome = winners.length > 1
@@ -358,7 +373,7 @@ function resultsView(final = false) {
       </li>`).join("")}
     </ol>
     <div class="actions spaced">
-      <button type="button" class="button primary" data-action="${final ? "ask-reset" : "advance-round"}">${final ? "Nuova serata" : state.round + 1 === partyRounds.length ? "Vedi classifica finale" : "Prossima manche"}</button>
+      <button type="button" class="button primary" data-action="${final ? "ask-reset" : "advance-round"}">${final ? "Nuova serata" : nextRoundIndex(state.round) === -1 ? "Vedi classifica finale" : "Prossima manche"}</button>
     </div>`;
 }
 
@@ -375,7 +390,6 @@ function render() {
     else if (state.phase === "results") view = resultsView();
     else if (state.phase === "final") view = resultsView(true);
     else if (id === "quiz") view = quizView();
-    else if (id === "song") view = songView();
     else view = timedView();
     app.innerHTML = `
       ${roadmap()}
@@ -401,7 +415,7 @@ function refresh(focus = false) {
 function createParty(form) {
   const teams = Array.from(form.querySelectorAll("input"), (input, index) => input.value.trim() || `Squadra ${index + 1}`);
   state = {
-    version: 1, teams, round: 0, phase: "intro", history: [], scores: teams.map(() => 0),
+    version: partyVersion, teams, round: nextRoundIndex(-1), phase: "intro", history: [], scores: teams.map(() => 0),
     draw: drawCards(teams.length), play: {},
   };
   refresh(true);
@@ -411,13 +425,12 @@ function beginRound() {
   const id = roundNow().id;
   state.phase = "play";
   if (id === "quiz") state.play = { turn: 0, used: [], selected: null, revealed: false };
-  else if (id === "song") state.play = { revealed: false, checks: state.teams.map(() => Array(5).fill(false)) };
   else prepareTimedTurn(0);
   refresh(true);
 }
 
 function prepareTimedTurn(turn) {
-  state.play = { turn, step: "ready", card: 0, deadline: null, seen: false, revealed: false, feedback: "" };
+  state.play = { turn, step: "ready", card: 0, deadline: null, seen: false, feedback: "" };
 }
 
 function openDialog(kind, markup) {
@@ -494,7 +507,7 @@ function finishTurn(reason) {
   hideDialog();
   state.play.step = "done";
   state.play.endedBy = reason;
-  live.textContent = reason === "time" ? "Tempo scaduto." : "Turno concluso.";
+  live.textContent = reason === "time" ? "Tempo scaduto." : reason === "success" ? "Sequenza completata." : "Turno concluso.";
   refresh(true);
 }
 
@@ -507,7 +520,6 @@ function scoreTimed(score, feedback) {
     return;
   }
   state.play.seen = false;
-  state.play.revealed = false;
   state.play.feedback = feedback;
   live.textContent = feedback;
   refresh();
@@ -518,6 +530,25 @@ function answerFlash(guess) {
   const truth = timedCard()[1];
   const correct = guess === truth;
   scoreTimed(correct ? 1 : -1, correct ? "Risposta esatta +1" : `Risposta sbagliata −1 · Era ${truth ? "vero" : "falso"}`);
+}
+
+function answerProverb(correct) {
+  if (!hasTime()) return;
+  const play = state.play;
+  if (!correct) {
+    play.card = 0;
+    play.feedback = "Errore. Si riparte dal primo proverbio.";
+  } else {
+    play.card++;
+    if (play.card === roundNow().hand) {
+      state.scores[teamOnTurn()] = roundNow().hand;
+      finishTurn("success");
+      return;
+    }
+    play.feedback = "Corretto.";
+  }
+  live.textContent = play.feedback;
+  refresh();
 }
 
 function nextTimedTurn() {
@@ -566,20 +597,21 @@ function scoreQuiz(sign) {
   play.revealed = false;
   play.turn++;
   hideDialog();
-  if (play.turn === quizTurns * state.teams.length) finishRound();
+  if (play.used.length === quizTileCount) finishRound();
   else refresh(true);
 }
 
 function finishRound() {
-  state.history.push([...state.scores]);
+  state.history[state.round] = [...state.scores];
   state.phase = "results";
   refresh(true);
 }
 
 function advanceRound() {
-  if (state.round + 1 === partyRounds.length) state.phase = "final";
+  const next = nextRoundIndex(state.round);
+  if (next === -1) state.phase = "final";
   else {
-    state.round++;
+    state.round = next;
     state.phase = "intro";
     state.play = {};
     state.scores = state.teams.map(() => 0);
@@ -632,13 +664,8 @@ const actionHandlers = {
   "mime-correct": () => { if (state.play.seen) scoreTimed(1, "Indovinato +1"); },
   "flash-true": () => answerFlash(true),
   "flash-false": () => answerFlash(false),
-  "proverb-correct": () => scoreTimed(1, "Proverbio completato +1"),
-  "proverb-reveal": () => {
-    if (!hasTime()) return;
-    state.play.revealed = true;
-    live.textContent = timedCard()[1];
-    refresh();
-  },
+  "proverb-correct": () => answerProverb(true),
+  "proverb-wrong": () => answerProverb(false),
   "pass": () => scoreTimed(0, "Carta saltata"),
   "end-turn": () => { if (hasTime()) finishTurn("manual"); },
   "next-turn": nextTimedTurn,
@@ -649,11 +676,6 @@ const actionHandlers = {
   },
   "quiz-correct": () => scoreQuiz(1),
   "quiz-wrong": () => scoreQuiz(-1),
-  "song-reveal": () => {
-    state.play.revealed = true;
-    refresh(true);
-  },
-  "song-finish": finishRound,
 };
 
 document.addEventListener("click", (event) => {
@@ -670,23 +692,13 @@ app.addEventListener("submit", (event) => {
   createParty(event.target);
 });
 
-app.addEventListener("change", (event) => {
-  const input = event.target;
-  if (!input.matches('input[type="checkbox"][data-team]')) return;
-  const { team, word } = input.dataset;
-  state.play.checks[team][word] = input.checked;
-  state.scores[team] = state.play.checks[team].filter(Boolean).length;
-  document.getElementById(`song-score-${team}`).textContent = `(${state.scores[team]}/5)`;
-  document.getElementById("standings").innerHTML = standings();
-  saveParty();
-});
-
 dialog.addEventListener("cancel", (event) => {
   event.preventDefault();
   if (dialog.dataset.kind === "mime" && state.play.step === "active") hideMimeCard();
   else closeDialog();
 });
 
+if (state) saveParty();
 render();
 if (state?.phase === "play" && roundNow().id === "quiz" && state.play.selected !== null) showQuizCard(state.play.selected);
 setInterval(updateClock, 125);

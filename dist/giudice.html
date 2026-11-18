@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151322">
+  <title>Scheda del giudice · Quizboard</title>
+  <link rel="stylesheet" href="party.css">
+  <script src="party-data.js" defer></script>
+  <script src="judge.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        Quizboard
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="panel stage judge-panel tone-proverbs" aria-labelledby="judge-title">
+      <div class="stage-header">
+        <div>
+          <p class="kicker">Solo per chi giudica</p>
+          <h1 id="judge-title">Scheda del giudice</h1>
+        </div>
+        <span class="round-icon" aria-hidden="true">❞</span>
+      </div>
+      <p class="stage-copy" id="judge-status" role="status"></p>
+      <div class="prompt-card" id="judge-card" hidden>
+        <p class="prompt-note" id="judge-position"></p>
+        <p class="prompt" id="judge-proverb" aria-live="polite"></p>
+      </div>
+      <p class="stage-copy judge-note">Per segnare una risposta corretta o un errore, usa i pulsanti nella finestra di gioco.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,17 @@
+.language-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 5px 8px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 750;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.language-toggle:hover { opacity: .8; }
+.header-actions { display: flex; align-items: center; gap: 8px; }

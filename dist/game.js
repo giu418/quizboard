@@ -4,7 +4,10 @@ const resetDialog = get("reset-dialog");
 const teamInputs = get("team-inputs");
 const storageKey = "quizboard-game-v1";
 
-const questionSets = { original: originalCategories, mintaka: mintakaCategories };
+const questionSets = {
+  original: [...originalCategories, famousPhotos],
+  mintaka: [...mintakaCategories, famousPhotos],
+};
 const defaultQuestionSet = "mintaka";
 
 let game = loadGame();
@@ -48,7 +51,8 @@ function buildBoard() {
   board.replaceChildren();
   clues = [];
   tiles = [];
-  for (const category of questionSets[questionSet]) {
+  for (const [columnIndex, category] of questionSets[questionSet].entries()) {
+    const categoryName = quizCategoryName(category.name);
     const column = document.createElement("section");
     column.className = "category";
     const heading = document.createElement("h2");
@@ -56,11 +60,13 @@ function buildBoard() {
     symbol.className = "category-symbol";
     symbol.setAttribute("aria-hidden", "true");
     symbol.textContent = category.symbol;
-    heading.append(symbol, category.name);
+    heading.append(symbol, categoryName);
     column.append(heading);
 
-    category.clues.forEach(([question, answer], row) => {
-      const clue = { id: clues.length, category: category.name, value: (row + 1) * 100, question, answer };
+    category.clues.forEach((pair, row) => {
+      const [question, answer] = tr(pair, (category.englishClues ?? englishQuizClues[questionSet][columnIndex])[row]);
+      const photo = category.photos?.[row];
+      const clue = { id: clues.length, category: categoryName, value: (row + 1) * 100, question, answer, photo };
       clues.push(clue);
       const tile = document.createElement("button");
       tile.type = "button";
@@ -79,11 +85,11 @@ function refreshTeamFields() {
   rows.forEach((row, index) => {
     const number = index + 1;
     const input = row.querySelector("input");
-    input.setAttribute("aria-label", `Nome della squadra ${number}`);
-    input.placeholder = `Squadra ${number}`;
+    input.setAttribute("aria-label", tr(`Nome della squadra ${number}`, `Team ${number} name`));
+    input.placeholder = teamName(index);
     const remove = row.querySelector("button");
     remove.hidden = rows.length === 1;
-    remove.setAttribute("aria-label", `Rimuovi la squadra ${number}`);
+    remove.setAttribute("aria-label", tr(`Rimuovi la squadra ${number}`, `Remove team ${number}`));
   });
 }
 
@@ -119,7 +125,7 @@ function renderGame() {
   get("new-game").hidden = !game;
   get("progress").value = played.length;
   get("progress").max = clues.length;
-  get("progress-label").textContent = `${played.length} / ${clues.length} caselle giocate`;
+  get("progress-label").textContent = `${played.length} / ${clues.length} ${tr("caselle giocate", "tiles played")}`;
 
   for (const clue of clues) {
     const tile = tiles[clue.id];
@@ -127,16 +133,18 @@ function renderGame() {
     tile.disabled = !game || used;
     tile.classList.toggle("played", used);
     tile.textContent = used ? "✓" : clue.value;
-    tile.setAttribute("aria-label", `${clue.category}, ${clue.value} punti${used ? ", già giocata" : ""}`);
+    tile.setAttribute("aria-label", `${clue.category}, ${clue.value} ${pointLabel(clue.value)}${used ? t(", già giocata") : ""}`);
   }
   if (!game) return;
 
   if (finished) {
     const highest = Math.max(...game.teams.map((team) => team.score));
     const leaders = game.teams.filter((team) => team.score === highest).map((team) => team.name);
-    get("turn").textContent = leaders.length === 1 ? `Vince ${leaders[0]}!` : `Parità tra ${leaders.join(", ")}`;
+    const names = new Intl.ListFormat(language).format(leaders);
+    get("turn").textContent = leaders.length === 1 ? tr(`Vince ${names}!`, `${names} wins!`) : `${tr("Parità tra", "Tie between")} ${names}`;
   } else {
-    get("turn").textContent = `Tocca a ${game.teams[game.turn].name}`;
+    const team = game.teams[game.turn].name;
+    get("turn").textContent = tr(`Tocca a ${team}`, `${team}’s turn`);
   }
 
   get("scores").replaceChildren(...game.teams.map((team, index) => {
@@ -156,14 +164,7 @@ function openClue(clue) {
   if (!game || activeClue || game.played.includes(clue.id)) return;
   activeClue = clue;
   revealed = false;
-  get("clue-category").textContent = clue.category;
-  get("clue-value").textContent = `${clue.value} punti`;
-  get("clue-team").textContent = `In gioco: ${game.teams[game.turn].name}`;
-  get("question").textContent = clue.question;
-  get("clue-target").hidden = false;
-  get("revealed").hidden = true;
-  get("score-actions").hidden = true;
-  clueDialog.setAttribute("aria-labelledby", "clue-heading");
+  renderClue();
   clueDialog.showModal();
   get("clue-target").focus();
 }
@@ -171,15 +172,35 @@ function openClue(clue) {
 function revealAnswer() {
   if (!activeClue || revealed) return;
   revealed = true;
-  get("revealed-question").textContent = activeClue.question;
-  get("answer").textContent = activeClue.answer;
-  get("wrong").textContent = `Sbagliata −${activeClue.value}`;
-  get("correct").textContent = `Esatta +${activeClue.value}`;
-  get("clue-target").hidden = true;
-  get("revealed").hidden = false;
-  get("score-actions").hidden = false;
-  clueDialog.setAttribute("aria-labelledby", "answer-heading");
+  renderClue();
   get("answer-heading").focus();
+}
+
+function renderClue() {
+  const { category, value, question, answer, photo } = activeClue;
+  const team = game.teams[game.turn].name;
+  get("clue-category").textContent = category;
+  get("clue-value").textContent = `${value} ${pointLabel(value)}`;
+  get("clue-team").textContent = tr(`In gioco: ${team}`, `${team}’s turn`);
+  get("clue-photo").hidden = !photo;
+  get("clue-photo-credit").hidden = !revealed;
+  if (photo) {
+    const image = get("clue-image");
+    image.src = photo.src;
+    image.alt = tr(...photo.alt);
+    const source = get("clue-photo-source");
+    source.href = photo.source;
+    source.textContent = photo.credit;
+  }
+  get("question").textContent = question;
+  get("revealed-question").textContent = revealed ? question : "";
+  get("answer").textContent = revealed ? answer : "";
+  get("wrong").textContent = `${t("Sbagliata")} −${value}`;
+  get("correct").textContent = `${t("Esatta")} +${value}`;
+  get("clue-target").hidden = revealed;
+  get("revealed").hidden = !revealed;
+  get("score-actions").hidden = !revealed;
+  clueDialog.setAttribute("aria-labelledby", revealed ? "answer-heading" : "clue-heading");
 }
 
 function scoreClue(multiplier) {
@@ -193,7 +214,8 @@ function scoreClue(multiplier) {
   saveGame();
   renderGame();
   clueDialog.close();
-  get("announcement").textContent = `${team.name} ${multiplier > 0 ? "guadagna" : "perde"} ${value} punti. ${get("turn").textContent}`;
+  const verb = multiplier > 0 ? tr("guadagna", "gains") : tr("perde", "loses");
+  get("announcement").textContent = `${team.name} ${verb} ${value} ${pointLabel(value)}. ${get("turn").textContent}`;
   (tiles.find((tile) => !tile.disabled) ?? get("turn")).focus();
 }
 
@@ -227,6 +249,17 @@ get("confirm-reset").addEventListener("click", () => {
   renderGame();
   resetDialog.close();
   get("setup-title").focus();
+});
+
+window.addEventListener("quizboard-language", () => {
+  buildBoard();
+  refreshTeamFields();
+  renderGame();
+  get("announcement").textContent = "";
+  if (activeClue && clueDialog.open) {
+    activeClue = clues[activeClue.id];
+    renderClue();
+  }
 });
 
 buildBoard();

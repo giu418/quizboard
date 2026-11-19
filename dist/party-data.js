@@ -1,4 +1,5 @@
-const partyStorage = "quizboard-party-v1";
+const partyDebug = new URLSearchParams(window.location.search).get("debug") === "1";
+const partyStorage = partyDebug ? "quizboard-party-debug-v1" : "quizboard-party-v1";
 const partyVersion = 2;
 const partyRounds = [
   { id: "mime", title: "Cinema muto", short: "Mima", icon: "✦", format: "45 secondi", summary: "Mima il titolo di un film.", rules: "A turno, un giocatore guarda il titolo in privato e lo mima senza parlare. La squadra ha 45 secondi per indovinare più film possibile. Ogni titolo indovinato vale un punto.", seconds: 45, hand: 8 },
@@ -6,6 +7,19 @@ const partyRounds = [
   { id: "song", title: "La parola mancante", short: "Musica", icon: "♫", suspended: true },
   { id: "flash", title: "Vero o falso lampo", short: "Lampo", icon: "ϟ", format: "60 secondi", summary: "Rispondi prima che scada il tempo.", rules: "Ogni squadra ha 60 secondi. Una risposta corretta vale +1, una sbagliata −1. Si può passare senza perdere punti.", seconds: 60, hand: 16 },
   { id: "proverbs", title: "Proverbi al volo", short: "Proverbi", icon: "❞", format: "60 secondi", summary: "Completa otto proverbi di fila.", rules: "La squadra ha 60 secondi per completare otto proverbi di fila. Al primo errore ricomincia dal primo proverbio con il tempo che resta. L’intera sequenza vale 8 punti.", seconds: 60, hand: 8 },
+  { id: "list", title: "La sfida delle liste", short: "Liste", icon: "☷", format: "20 risposte", summary: "Trova risposte alla categoria.", rules: "Le squadre si alternano e nominano una risposta valida non ancora data oppure passano. Ogni risposta valida vale un punto. La manche termina quando tutte le risposte sono state trovate o tutte le squadre passano consecutivamente." },
+];
+
+const listCategories = [
+  { it: "Capitali europee", en: "European capitals", answers: [
+    ["Roma","Rome"],["Parigi","Paris"],["Londra","London"],["Berlino","Berlin"],["Madrid","Madrid"],["Lisbona","Lisbon"],["Vienna","Vienna"],["Praga","Prague"],["Varsavia","Warsaw"],["Atene","Athens"],["Dublino","Dublin"],["Oslo","Oslo"],["Stoccolma","Stockholm"],["Helsinki","Helsinki"],["Copenaghen","Copenhagen"],["Bruxelles","Brussels"],["Amsterdam","Amsterdam"],["Budapest","Budapest"],["Bucarest","Bucharest"],["Zagabria","Zagreb"]
+  ] },
+  { it: "Elementi chimici", en: "Chemical elements", answers: [
+    ["Idrogeno","Hydrogen"],["Elio","Helium"],["Litio","Lithium"],["Carbonio","Carbon"],["Azoto","Nitrogen"],["Ossigeno","Oxygen"],["Fluoro","Fluorine"],["Neon","Neon"],["Sodio","Sodium"],["Magnesio","Magnesium"],["Alluminio","Aluminium"],["Silicio","Silicon"],["Fosforo","Phosphorus"],["Zolfo","Sulfur"],["Cloro","Chlorine"],["Argon","Argon"],["Potassio","Potassium"],["Calcio","Calcium"],["Ferro","Iron"],["Rame","Copper"]
+  ] },
+  { it: "Animali mammiferi", en: "Mammals", answers: [
+    ["Cane","Dog"],["Gatto","Cat"],["Cavallo","Horse"],["Mucca","Cow"],["Pecora","Sheep"],["Capra","Goat"],["Maiale","Pig"],["Leone","Lion"],["Tigre","Tiger"],["Elefante","Elephant"],["Giraffa","Giraffe"],["Zebra","Zebra"],["Orso","Bear"],["Lupo","Wolf"],["Volpe","Fox"],["Delfino","Dolphin"],["Balena","Whale"],["Pipistrello","Bat"],["Canguro","Kangaroo"],["Koala","Koala"]
+  ] },
 ];
 
 function activePartyTeam(party) {

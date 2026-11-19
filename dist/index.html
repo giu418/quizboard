@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="La serata giochi di Quizboard. Quattro manche a squadre, un tabellone condiviso e una classifica.">
-  <meta name="theme-color" content="#151322">
-  <title>Serata giochi · Quizboard</title>
-  <link rel="stylesheet" href="party.css">
+  <meta name="description" content="La serata giochi di Quizboard. Quattro manche a squadre, un tabellone condiviso e una classifica." data-i18n-attrs="content">
+  <meta name="theme-color" content="#0b142b">
+  <title data-i18n>Serata giochi · Quizboard</title>
+  <link rel="stylesheet" href="party.css?v=welcome-photos">
+  <link rel="stylesheet" href="language.css">
+  <script src="english-text.js" defer></script>
+  <script src="english-content.js?v=photos" defer></script>
+  <script src="language.js" defer></script>
   <script src="mintaka.js" defer></script>
-  <script src="party-data.js" defer></script>
-  <script src="party.js" defer></script>
+  <script src="photo-questions.js" defer></script>
+  <script src="party-data.js?v=list-game" defer></script>
+  <script src="party.js?v=welcome-photos" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -18,9 +23,10 @@
         <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         Quizboard
       </a>
-      <nav aria-label="Modalità di gioco">
-        <a class="standalone" href="./quiz.html">Solo quiz <span aria-hidden="true">▦</span></a>
-        <button type="button" class="button secondary reset" data-action="ask-reset" id="reset-button" hidden>Nuova serata</button>
+      <nav aria-label="Modalità di gioco" data-i18n-attrs="aria-label">
+        <a class="standalone" href="./quiz.html"><span data-i18n>Solo quiz</span> <span aria-hidden="true">▦</span></a>
+        <button data-i18n type="button" class="button secondary reset" data-action="ask-reset" id="reset-button" hidden>Nuova serata</button>
+        <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English">EN</button>
       </nav>
     </div>
   </header>
@@ -28,7 +34,7 @@
   <main class="wrap" id="app"></main>
 
   <footer class="wrap credits">
-    <p>Domande del tabellone selezionate e adattate da <a href="https://github.com/amazon-science/mintaka">Mintaka</a> di Priyanka Sen, Alham Fikri Aji e Amir Saffari, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+    <p><span data-i18n>Domande del tabellone selezionate e adattate da</span> <a href="https://github.com/amazon-science/mintaka">Mintaka</a> <span data-i18n>di Priyanka Sen, Alham Fikri Aji e Amir Saffari,</span> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
   </footer>
   <dialog id="card-dialog" aria-labelledby="card-title"></dialog>
   <p id="live" class="sr-only" role="status"></p>

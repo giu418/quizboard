@@ -3,11 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#151322">
-  <title>Scheda del giudice · Quizboard</title>
-  <link rel="stylesheet" href="party.css">
-  <script src="party-data.js" defer></script>
-  <script src="judge.js" defer></script>
+  <meta name="theme-color" content="#0b142b">
+  <title data-i18n>Scheda del giudice · Quizboard</title>
+  <link rel="stylesheet" href="party.css?v=languages">
+  <link rel="stylesheet" href="language.css">
+  <script src="english-text.js" defer></script>
+  <script src="english-content.js" defer></script>
+  <script src="language.js" defer></script>
+  <script src="party-data.js?v=debug-rounds" defer></script>
+  <script src="judge.js?v=languages" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -16,14 +20,15 @@
         <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         Quizboard
       </div>
+      <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English">EN</button>
     </div>
   </header>
   <main class="wrap">
     <section class="panel stage judge-panel tone-proverbs" aria-labelledby="judge-title">
       <div class="stage-header">
         <div>
-          <p class="kicker">Solo per chi giudica</p>
-          <h1 id="judge-title">Scheda del giudice</h1>
+          <p data-i18n class="kicker">Solo per chi giudica</p>
+          <h1 data-i18n id="judge-title">Scheda del giudice</h1>
         </div>
         <span class="round-icon" aria-hidden="true">❞</span>
       </div>
@@ -32,7 +37,7 @@
         <p class="prompt-note" id="judge-position"></p>
         <p class="prompt" id="judge-proverb" aria-live="polite"></p>
       </div>
-      <p class="stage-copy judge-note">Per segnare una risposta corretta o un errore, usa i pulsanti nella finestra di gioco.</p>
+      <p data-i18n class="stage-copy judge-note">Per segnare una risposta corretta o un errore, usa i pulsanti nella finestra di gioco.</p>
     </section>
   </main>
 </body>

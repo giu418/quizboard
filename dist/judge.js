@@ -8,7 +8,7 @@ function updateJudge() {
   try {
     party = JSON.parse(localStorage.getItem(partyStorage));
   } catch {
-    judgeStatus.textContent = "Apri la scheda nello stesso browser della partita, con la memorizzazione locale attiva.";
+    judgeStatus.textContent = t("Apri la scheda nello stesso browser della partita, con la memorizzazione locale attiva.");
     judgeCard.hidden = true;
     return;
   }
@@ -17,16 +17,18 @@ function updateJudge() {
   const step = party?.play?.step;
   const canJudge = party?.version === partyVersion && party.phase === "play" &&
     round?.id === "proverbs" && ["ready", "active"].includes(step);
-  const card = canJudge ? timedPartyCard(party, proverbCards) : null;
+  const card = canJudge ? timedPartyCard(party, tr(proverbCards, englishProverbCards)) : null;
 
   judgeCard.hidden = !card;
   if (card) {
     const activeTeam = party.teams[activePartyTeam(party)];
-    judgeStatus.textContent = step === "ready" ? `${activeTeam} si prepara.` : `Tocca a ${activeTeam}.`;
-    judgePosition.textContent = `Proverbio ${party.play.card + 1} di ${round.hand}`;
+    judgeStatus.textContent = step === "ready"
+      ? tr(`${activeTeam} si prepara.`, `${activeTeam} is getting ready.`)
+      : tr(`Tocca a ${activeTeam}.`, `${activeTeam}’s turn.`);
+    judgePosition.textContent = `${tr("Proverbio", "Proverb")} ${progressCount(party.play.card + 1, round.hand)}`;
     judgeProverb.textContent = `${card[0].replace(/…$/u, "")} ${card[1]}`;
   } else {
-    judgeStatus.textContent = "In attesa del prossimo turno di Proverbi al volo.";
+    judgeStatus.textContent = t("In attesa del prossimo turno di Proverbi al volo.");
     judgeProverb.textContent = "";
   }
 }
@@ -34,5 +36,6 @@ function updateJudge() {
 window.addEventListener("storage", (event) => {
   if (event.key === partyStorage || event.key === null) updateJudge();
 });
+window.addEventListener("quizboard-language", updateJudge);
 
 updateJudge();

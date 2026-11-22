@@ -2,7 +2,7 @@ const app = document.getElementById("app");
 const dialog = document.getElementById("card-dialog");
 const live = document.getElementById("live");
 const minTeams = 2;
-const maxTeams = 4;
+const maxTeams = 6; // oltre sei squadre i mazzi di carte non bastano: vedi partyHand()
 const flashRevealDuration = 850;
 const partyQuizCategories = [...mintakaCategories, famousPhotos];
 const quizTileCount = partyQuizCategories.reduce((count, category) => count + category.clues.length, 0);
@@ -109,10 +109,10 @@ function indices(length, offset = 0) {
 function drawCards(teams) {
   const trueCards = shuffle(indices(flashTrue.length));
   const falseCards = shuffle(indices(flashFalse.length, flashTrue.length));
-  const halfFlashHand = lookup.get("flash").hand / 2;
+  const halfFlashHand = partyHand(lookup.get("flash"), teams) / 2;
   return {
     quiz: mintakaCategories.map(({ clues }) => clues.map(() => Math.floor(Math.random() * 2))),
-    mime: shuffle(indices(mimeCards.length)).slice(0, teams * lookup.get("mime").hand),
+    mime: shuffle(indices(mimeCards.length)).slice(0, teams * partyHand(lookup.get("mime"), teams)),
     flash: indices(teams).flatMap((index) => {
       const offset = index * halfFlashHand;
       return shuffle([
@@ -120,12 +120,16 @@ function drawCards(teams) {
         ...falseCards.slice(offset, offset + halfFlashHand),
       ]);
     }),
-    proverbs: shuffle(indices(proverbCards.length)).slice(0, teams * lookup.get("proverbs").hand),
+    proverbs: shuffle(indices(proverbCards.length)).slice(0, teams * partyHand(lookup.get("proverbs"), teams)),
   };
 }
 
 function roundNow() {
   return partyRounds[state.round];
+}
+
+function handNow() {
+  return partyHand(roundNow(), state.teams.length);
 }
 
 function teamOnTurn() {
@@ -241,7 +245,7 @@ function setupView() {
       </div>
       <section class="panel team-panel" aria-labelledby="setup-title">
         <h2 class="panel-title" id="setup-title" tabindex="-1">${t("Prepara le squadre")}</h2>
-        <p class="panel-note">${t("Puoi giocare con 2–4 squadre.")}</p>
+        <p class="panel-note">${t("Puoi giocare con 2–6 squadre.")}</p>
         ${teamForm()}
       </section>
     </section>
@@ -309,7 +313,7 @@ function standings(scores, activeTeam = -1, hud = false) {
   // Nel gioco i podi restano nell'ordine delle squadre, così nessuno cambia posto durante la manche.
   const entries = hud ? scores.map((score, team) => ({ score, team })) : ranked(scores);
   const cards = hud && roundNow().id === "quiz";
-  return `<ol class="standings">
+  return `<ol class="standings" style="--n: ${entries.length}">
       ${entries.map(({ team, score }) => {
         const used = cards ? state.play.cards?.[team] : null;
         const bump = hud && lastScores && lastScores[team] !== undefined && lastScores[team] !== score;
@@ -361,7 +365,7 @@ function cardProgress(round, completed) {
   const label = round.id === "proverbs" ? t("Proverbi corretti di fila") : t("Avanzamento del turno");
   return `<div class="cards-progress">
     <span>${label}</span>
-    <progress max="${round.hand}" value="${completed}" aria-label="${label}" aria-valuetext="${progressCount(completed, round.hand)}"></progress>
+    <progress max="${handNow()}" value="${completed}" aria-label="${label}" aria-valuetext="${progressCount(completed, handNow())}"></progress>
   </div>`;
 }
 
@@ -408,7 +412,7 @@ function timedView() {
   const card = timedCard();
   output.push(turnLine(t("Tocca a")));
   if (round.id === "mime") {
-    output.push(`<div class="prompt-card"><span class="prompt-note">${tr("Carta", "Card")} ${progressCount(play.card + 1, round.hand)}</span><p class="prompt">${t("Titolo nascosto")}</p></div>
+    output.push(`<div class="prompt-card"><span class="prompt-note">${tr("Carta", "Card")} ${progressCount(play.card + 1, handNow())}</span><p class="prompt">${t("Titolo nascosto")}</p></div>
       <div class="actions">
         <button type="button" class="button secondary" data-action="mime-card">${t("Mostra titolo in privato")}</button>
         <button type="button" class="button positive" data-action="mime-correct" ${play.seen ? "" : "disabled"}>${t("Indovinato +1")}</button>
@@ -506,7 +510,7 @@ function resultsView(final = false) {
     : tr(`Vince ${esc(winners[0])}!`, `${esc(winners[0])} wins!`);
   return `${roundTitle(title)}
     <p class="stage-copy">${final ? outcome : t("I punti della serata dipendono dal piazzamento in questa manche. Le squadre a pari merito si dividono i punti dei posti occupati.")}</p>
-    <ol class="result-table ${final ? "final-table" : ""}">
+    <ol class="result-table ${final ? "final-table" : ""}" style="--n: ${entries.length}">
       ${entries.map(({ score, team, place, points }, position) => `<li class="result-row ${teamClass(team)}${place === 1 ? " winner" : ""}" style="--rev: ${entries.length - 1 - position}">
         <span class="result-place" aria-label="${tr("Posizione", "Place")} ${place}">${tr(`${place}°`, englishPlace(place))}</span>
         ${teamChip(team)}
@@ -707,7 +711,7 @@ function scoreTimed(score, feedback) {
   if (!hasTime()) return;
   state.scores[teamOnTurn()] += score;
   state.play.card += 1;
-  if (state.play.card === roundNow().hand) {
+  if (state.play.card === handNow()) {
     finishTurn("cards");
     return;
   }
@@ -735,7 +739,7 @@ function finishFlashReveal(seconds) {
   const play = state.play;
   delete play.reveal;
   play.card++;
-  if (play.card === roundNow().hand) finishTurn("cards");
+  if (play.card === handNow()) finishTurn("cards");
   else if (seconds === 0) finishTurn("time");
   else refresh();
 }
@@ -748,8 +752,8 @@ function answerProverb(correct) {
     play.feedback = "Errore. Si riparte dal primo proverbio.";
   } else {
     play.card++;
-    if (play.card === roundNow().hand) {
-      state.scores[teamOnTurn()] = roundNow().hand;
+    if (play.card === handNow()) {
+      state.scores[teamOnTurn()] = handNow();
       finishTurn("success");
       return;
     }

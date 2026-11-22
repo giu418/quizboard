@@ -26,9 +26,18 @@ function activePartyTeam(party) {
   return (party.round + party.play.turn) % party.teams.length;
 }
 
+// I mazzi sono finiti: con molte squadre la mano di ciascuna si accorcia,
+// così nessuna carta esce due volte nella stessa serata.
+function partyHand(round, teams) {
+  if (round.id === "mime") return Math.min(round.hand, Math.floor(mimeCards.length / teams));
+  if (round.id === "flash") return Math.min(round.hand, 2 * Math.floor(Math.min(flashTrue.length, flashFalse.length) / teams));
+  if (round.id === "proverbs") return Math.min(round.hand, Math.floor(proverbCards.length / teams));
+  return round.hand;
+}
+
 function timedPartyCard(party, bank) {
-  const { id, hand } = partyRounds[party.round];
-  return bank[party.draw[id][party.play.turn * hand + party.play.card]];
+  const round = partyRounds[party.round];
+  return bank[party.draw[round.id][party.play.turn * partyHand(round, party.teams.length) + party.play.card]];
 }
 
 const mimeCards = [

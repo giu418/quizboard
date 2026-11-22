@@ -1,6 +1,6 @@
 # Quizboard
 
-**Serata giochi** è un gioco da browser per 2–4 squadre. Una persona conduce la partita su uno schermo condiviso. I giochi disponibili sono Cinema muto, Tabellone quiz, Vero o falso lampo, Proverbi al volo e La sfida delle liste. Prima di iniziare si possono scegliere e ordinare le manche, anche per giocare a un solo gioco. Al termine di ogni manche si assegnano punti per piazzamento e i progressi si salvano nel browser.
+**Serata giochi** è un gioco da browser per 2–6 squadre. Una persona conduce la partita su uno schermo condiviso. I giochi disponibili sono Cinema muto, Tabellone quiz, Vero o falso lampo, Proverbi al volo e La sfida delle liste. Prima di iniziare si possono scegliere e ordinare le manche, anche per giocare a un solo gioco. Al termine di ogni manche si assegnano punti per piazzamento e i progressi si salvano nel browser.
 
 La pagina iniziale mostra la configurazione delle squadre. **Inizia la partita** apre il benvenuto e **Cominciamo** porta alla prima manche. Il selettore **IT/EN** cambia lingua per l’interfaccia e i contenuti di gioco.
 

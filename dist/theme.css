@@ -242,6 +242,7 @@
 .board .tile { font-size: clamp(0.8rem, 2.5vw, 2.3rem); }
 .list-answers .button { font-size: clamp(0.95rem, 1.5vw, 1.35rem); padding-inline: var(--sp-2); }
 .play-hud .total { font-size: clamp(1.25rem, 2.6vw, 2.25rem); }
+.play-hud .standings:has(li:nth-child(4)) .total { font-size: clamp(1.1rem, 1.9vw, 1.6rem); padding-inline: var(--sp-2); }
 .result-row { border-left-width: 14px; }
 
 /* Ingresso delle tessere: le lampade si accendono sfarfallando. */

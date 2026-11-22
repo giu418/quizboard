@@ -113,6 +113,22 @@ h1, h2, h3, .display {
   transition: background-color var(--dur-1);
 }
 .language-toggle:hover { background: var(--surface-2); }
+.sound-toggle {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--hit);
+  min-height: var(--hit);
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-btn);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+.sound-toggle:hover { background: var(--surface-2); }
+.sound-toggle[aria-pressed="true"] { color: var(--faint); border-color: var(--line-soft); }
+.sound-toggle .ico { width: 1.35rem; height: 1.35rem; }
 .actions { display: flex; align-items: stretch; justify-content: center; flex-wrap: wrap; gap: var(--sp-3); }
 .actions.spaced { margin-top: var(--sp-5); }
 
@@ -276,8 +292,9 @@ input::placeholder { color: var(--faint); opacity: 1; }
 /* ---------- Schermate di gioco ---------- */
 :root:has(.play-view) .credits,
 :root:has(.play-view) .topbar .brand,
-:root:has(.play-view) .topbar nav > :not(.language-toggle) { display: none; }
+:root:has(.play-view) .topbar nav > :not(.language-toggle, .sound-toggle) { display: none; }
 :root:has(.play-view) .topbar, :root:has(.play-view) .topbar-inner, :root:has(.play-view) .topbar nav { display: contents; }
+:root:has(.play-view) .topbar .sound-toggle { position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-end: calc(var(--sp-3) + var(--hit) + var(--sp-2)); min-height: 44px; background: var(--sunk); }
 :root:has(.play-view) .topbar .language-toggle { position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-end: var(--sp-3); min-height: 44px; background: var(--sunk); font-size: var(--fs-1); }
 .play-view { width: 100%; }
 .play-stage { flex: 1; display: flex; flex-direction: column; gap: var(--sp-4); min-height: 100dvh; padding: var(--sp-4) var(--gutter) 0; }
@@ -350,9 +367,10 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 @keyframes verdict-bad { 15% { transform: translateX(-18px); } 30% { transform: translateX(16px); } 45% { transform: translateX(-12px); } 60% { transform: translateX(8px); } 80% { transform: translateX(-4px); } }
 
 /* Podi delle squadre */
-.play-hud { display: flex; align-items: flex-end; gap: var(--sp-3); flex-wrap: wrap; padding-inline-end: calc(var(--hit) + var(--sp-3)); }
+.play-hud { display: flex; align-items: flex-end; gap: var(--sp-3); flex-wrap: wrap; padding-inline-end: calc(var(--hit) * 2 + var(--sp-3) + var(--sp-2)); }
 .play-hud aside { flex: 1; min-width: 0; }
 .play-hud .reset { align-self: center; font-size: var(--fs-2); min-height: 44px; padding-inline: var(--sp-3); }
+.play-hud .standings:has(li:nth-child(4)) .total { font-size: var(--fs-5); }
 .standings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: var(--sp-3); align-items: end; }
 .standings li {
   display: grid;

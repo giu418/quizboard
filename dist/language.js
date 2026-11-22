@@ -1,7 +1,8 @@
 const languageStorage = "quizboard-language";
+const languageToggle = document.querySelector("[data-language-toggle]:not([hidden])");
 let language = "it";
 try {
-  if (localStorage.getItem(languageStorage) === "en") language = "en";
+  if (languageToggle && localStorage.getItem(languageStorage) === "en") language = "en";
 } catch {
   // The selector still works if browser storage is unavailable.
 }
@@ -40,13 +41,13 @@ function renderLanguage() {
 }
 
 function setLanguage(next) {
-  if (language === next) return;
+  if (!languageToggle || language === next) return;
   language = next;
   renderLanguage();
   window.dispatchEvent(new Event("quizboard-language"));
 }
 
-document.querySelector("[data-language-toggle]").addEventListener("click", () => {
+languageToggle?.addEventListener("click", () => {
   setLanguage(tr("en", "it"));
   try {
     localStorage.setItem(languageStorage, language);

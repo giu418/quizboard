@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b142b">
+  <title>Schermo giocatori · Quizboard</title>
+  <link rel="stylesheet" href="party.css?v=projector-layout">
+  <script src="presentation.js" defer></script>
+  <script src="player.js?v=judgment-correction" defer></script>
+</head>
+<body class="player-display">
+  <header class="player-toolbar">
+    <button id="player-fullscreen" class="button ghost" type="button">Schermo intero</button>
+    <p id="player-fullscreen-status" class="panel-note" role="status" hidden></p>
+  </header>
+  <main id="player-stage" class="stage play-stage player-stage tone-quiz">
+    <div id="player-heading" class="player-heading" hidden></div>
+    <div class="player-body">
+      <div id="player-content" class="play-content"></div>
+      <video id="player-video" class="song-player" aria-label="Video karaoke" muted playsinline preload="metadata" hidden></video>
+      <button id="player-enable-video" class="button secondary" type="button" hidden>Attiva video</button>
+      <p id="player-media-status" role="status" hidden></p>
+    </div>
+    <div id="player-scores" class="player-scores" hidden></div>
+  </main>
+</body>
+</html>

@@ -185,6 +185,9 @@
   --ease-in: cubic-bezier(0.6, 0, 0.9, 0.3);
   --ease-pop: cubic-bezier(0.3, 1.7, 0.5, 1);
 
+  /* Suono: timbro degli effetti in sound.js */
+  --sound-theme: varieta;
+
   /* Scenografia: sipario di velluto */
   --velvet: repeating-linear-gradient(90deg, #0000003b 0 2px, transparent 2px 46px, #ffffff0a 46px 92px);
   --stage-bg: var(--velvet), radial-gradient(ellipse 90% 80% at 50% 30%, var(--bg-glow) 0%, var(--bg-mid) 50%, var(--bg) 100%);

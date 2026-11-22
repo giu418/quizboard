@@ -164,7 +164,7 @@ In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`,
 - **Ipotesi**: il logo attuale (quadrato oro con quattro punti, uno attenuato) e il nome «Quizboard» restano.
 - **Ipotesi**: i quattro colori squadra restano distinguibili fra loro e sempre accompagnati dal nome (mai solo colore).
 - `dist/audio/estratto-*.mp3` e la manche «La parola mancante» sono sospesi: non compaiono nel gioco e non vengono ridisegnati.
-- **Ipotesi**: la TV è collegata a internet. I font arrivano da Google Fonts con `display=swap`; senza rete l'app usa i caratteri di sistema. Proposta: copiare i font in `dist/fonts`.
+- I font sono copiati in `dist/fonts` (woff2, sottoinsiemi latin e latin-ext, `font-display: swap`): l'app non ha bisogno di rete.
 - Modifiche agli script, solo di presentazione: icone SVG (`icons`/`ico()` in `language.js`), classi `view-enter`/`card-enter`/`bump`/`urgent`, attributo `data-look` e origine `--ox/--oy` delle finestre, podi con stato della carta, pulsante di chiusura nella casella del quiz, focus che torna alla casella. Nessuna modifica a regole, punteggi, salvataggi, testi.
 - In «Solo quiz» i simboli Unicode delle categorie non vengono più mostrati (una sola famiglia di icone, in SVG).
 - I commit sono firmati `bskenzo` con l'email dell'utente perché git non ha un'identità configurata.

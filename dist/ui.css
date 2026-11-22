@@ -394,13 +394,15 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 .quiz-column h2, .category h2 {
   display: grid;
   place-items: center;
-  min-height: 44px;
+  height: 44px;
   padding: var(--sp-1);
+  overflow: hidden;
   background: var(--tone, var(--tone-quiz));
   color: var(--on-team);
   border-radius: var(--r-1);
-  font-size: clamp(0.7rem, 1.75vw, 1.5rem);
-  letter-spacing: 0.04em;
+  font-size: clamp(0.65rem, 1.5vw, 1.35rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   text-align: center;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -413,7 +415,7 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
   border-radius: var(--r-tile);
   background: var(--tile-bg);
   color: var(--tile-text);
-  font: var(--display-weight) clamp(1.5rem, 4.6vw, 3.9rem)/1 var(--font-display);
+  font: var(--display-weight) clamp(1.05rem, 4.4vw, 3.9rem)/1 var(--font-display);
   font-variant-numeric: tabular-nums;
   text-shadow: var(--tile-text-shadow);
   box-shadow: var(--tile-inset), var(--sh-1);
@@ -428,7 +430,8 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 /* ---------- Sfida delle liste ---------- */
 .list-category { font-size: var(--fs-6); text-align: center; color: var(--tone); }
 .list-answers { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: var(--sp-2); align-content: center; }
-.list-answers .button { min-height: 64px; font-size: var(--fs-4); background: var(--tile-bg); border-color: var(--tile-line); box-shadow: var(--tile-inset); }
+.list-answers .button { min-height: 64px; font-size: var(--fs-4); background: var(--tile-bg); border-color: var(--tile-line); color: var(--tile-text); text-shadow: var(--tile-text-shadow); box-shadow: var(--tile-inset); }
+.list-answers .button:disabled { text-shadow: none; }
 .list-answers .button:disabled { opacity: 1; background: var(--pos); border-color: var(--pos-line); color: var(--on-pos); box-shadow: none; }
 .view-enter .list-answers .button { animation: tile-in var(--dur-3) var(--ease-out) calc(var(--stagger) * var(--i, 0) * 0.5) both; }
 .list-play .panel-note { text-align: center; margin-inline: auto; }
@@ -560,7 +563,7 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .progress { display: grid; gap: var(--sp-2); min-width: 12rem; color: var(--muted); font-size: var(--fs-1); font-weight: 700; letter-spacing: var(--label-track); text-transform: uppercase; }
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 320px); gap: var(--sp-5); align-items: start; }
 .board { min-height: min(62dvh, 640px); }
-.category h2 { font-size: clamp(0.65rem, 1.3vw, 1.25rem); hyphens: none; }
+.category h2 { font-size: clamp(0.6rem, 1.1vw, 1.1rem); }
 .sidebar { display: grid; gap: var(--sp-4); min-width: 0; }
 .sidebar .panel { padding: var(--sp-4); box-shadow: var(--sh-1); }
 .sidebar h2 { font-size: var(--fs-4); }
@@ -616,16 +619,17 @@ dialog .quiz-clue-category { margin-bottom: 0; }
   .roadmap li { flex-direction: column; justify-content: center; gap: 2px; padding: var(--sp-1); text-align: center; font-size: 0.7rem; }
   .play-stage { padding-bottom: calc(var(--hit) + var(--sp-5)); }
   .play-hud { display: grid; grid-template-columns: minmax(0, 1fr); padding-inline-end: 0; }
-  .play-hud .reset { position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-start: var(--sp-3); background: var(--sunk); }
+  .play-hud .reset { justify-self: start; }
   .standings { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
   .standings li.current { transform: none; }
   .standings li, .play-hud .standings li { padding: var(--sp-2); border-bottom: var(--bw) solid var(--line); border-radius: var(--r-1); }
   .play-hud .total, .total { font-size: var(--fs-4); min-width: 0; padding-inline: var(--sp-2); }
-  .result-row .team-label { font-size: var(--fs-4); }
-  .final-table .winner .team-label { font-size: var(--fs-5); }
-  .result-values .total, .result-place { font-size: var(--fs-5); }
+  .result-row .team-label, .final-table .winner .team-label { font-size: var(--fs-3); }
+  .result-values .total, .result-place { font-size: var(--fs-4); }
+  .final-table .result-row.winner { padding-block: var(--sp-4); }
   .actions .button { flex: 1 1 100%; }
-  .quiz-column h2, .category h2 { writing-mode: vertical-rl; min-height: 6.5rem; font-size: var(--fs-1); hyphens: none; }
+  .quiz-column h2, .category h2 { writing-mode: vertical-rl; height: 7rem; font-size: 0.75rem; letter-spacing: 0.02em; }
+  .tile { font-size: clamp(0.8rem, 4vw, 1.4rem); }
   .turn-line .team-label { font-size: var(--fs-4); }
   .result-row { gap: var(--sp-2); padding-inline: var(--sp-3); }
   .sidebar:has(#setup:not([hidden])) .rules { display: none; }

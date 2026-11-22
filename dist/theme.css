@@ -1,85 +1,85 @@
-/* Tema «Prima serata»: studio televisivo blu elettrico e oro.
+/* Tema «Varietà»: sabato sera a teatro, velluto bordeaux, crema e oro.
    Unico punto in cui vivono i token; ui.css usa solo queste variabili. */
-@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Shrikhand&display=swap");
 
 :root {
   color-scheme: dark;
 
   /* Colori: fondo e superfici */
-  --bg: #0b1250;
-  --bg-mid: #1f31b8;
-  --bg-glow: #3d58f0;
-  --surface: #16238a;
-  --surface-2: #2438c8;
-  --surface-3: #4560f0;
-  --sunk: #0b1250;
-  --line: #9db0ff;
-  --line-soft: #3b50c8;
-  --backdrop: #050a3ccc;
+  --bg: #1d040f;
+  --bg-mid: #3b0a22;
+  --bg-glow: #7a1640;
+  --surface: #5a1233;
+  --surface-2: #7a1c44;
+  --surface-3: #8e2450;
+  --sunk: #1d040f;
+  --line: #f3c6d2;
+  --line-soft: #8e3a55;
+  --backdrop: #120208d9;
 
   /* Colori: testo */
-  --text: #ffffff;
-  --muted: #e3e9ff;
-  --faint: #9db0ff;
+  --text: #fff3d6;
+  --muted: #f3c6d2;
+  --faint: #d39bb0;
 
   /* Colori: primario e stati */
-  --primary: #ffd35c;
-  --primary-hi: #ffe59a;
-  --on-primary: #1b1403;
-  --focus: #ffffff;
-  --pos: #136f45;
-  --pos-hi: #1a8a57;
-  --pos-line: #5fd39a;
-  --on-pos: #f1fff7;
-  --neg: #a32a44;
-  --neg-hi: #bd3552;
-  --neg-line: #ff8fa6;
-  --on-neg: #fff1f3;
+  --primary: #ffc44d;
+  --primary-hi: #ffe29a;
+  --on-primary: #3b0a22;
+  --focus: #fff3d6;
+  --pos: #177a49;
+  --pos-hi: #1f9159;
+  --pos-line: #7fe0aa;
+  --on-pos: #ffffff;
+  --neg: #c21f3a;
+  --neg-hi: #d6304b;
+  --neg-line: #ffb3c0;
+  --on-neg: #ffffff;
 
   /* Colori: squadre e manche */
   --team-0: #b7a2ff;
   --team-1: #ff9f8a;
   --team-2: #8fd6f5;
   --team-3: #a9e59a;
-  --on-team: #0b1250;
+  --on-team: #1d040f;
   --tone-mime: #ff9f8a;
-  --tone-quiz: #b7a2ff;
+  --tone-quiz: #ffc44d;
   --tone-song: #f9cc81;
-  --tone-flash: #7de3ff;
+  --tone-flash: #8fd6f5;
   --tone-proverbs: #a9e59a;
-  --tone-list: #ffd35c;
-  --light-a: #7de3ff47;
-  --light-b: #ff78dc40;
-  --light-c: #ffe3a338;
-  --light-blur: 22px;
+  --tone-list: #b7a2ff;
+  --light-a: #ffe3a33d;
+  --light-b: #ff9fc433;
+  --light-c: #fff3d62e;
+  --light-blur: 26px;
 
-  /* Tessere del tabellone */
-  --tile-bg: linear-gradient(180deg, #6a84ff 0%, #2438c8 100%);
-  --tile-bg-hi: linear-gradient(180deg, #8ea2ff 0%, #3550e0 100%);
-  --tile-text: #ffd966;
-  --tile-text-shadow: 0 0.04em 0 #0b1250;
-  --tile-line: #c9d3ff;
-  --tile-used-bg: #111c7a;
-  --tile-used-line: #3b50c8;
-  --tile-used-text: #9db0ff;
+  /* Tessere del tabellone: lampade accese */
+  --tile-bg: linear-gradient(180deg, #fffaea 0%, #f6dfae 100%);
+  --tile-bg-hi: linear-gradient(180deg, #ffffff 0%, #ffe9b8 100%);
+  --tile-text: #a3122e;
+  --tile-text-shadow: none;
+  --tile-line: #ffc44d;
+  --tile-used-bg: #2a0618;
+  --tile-used-line: #8e3a55;
+  --tile-used-text: #d39bb0;
 
   /* Tipografia */
-  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --font-body: "Barlow", system-ui, sans-serif;
-  --display-weight: 800;
-  --display-case: uppercase;
-  --display-track: 0.01em;
-  --display-lh: 0.94;
-  --display-shadow: 0 0.04em 0 #0b1250;
-  --label-track: 0.14em;
+  --font-display: "Shrikhand", "Cooper Black", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --display-weight: 400;
+  --display-case: none;
+  --display-track: 0em;
+  --display-lh: 1.06;
+  --display-shadow: 0.05em 0.07em 0 #1d040f;
+  --label-track: 0.12em;
   --fs-1: 0.875rem;
   --fs-2: 1rem;
-  --fs-3: 1.25rem;
-  --fs-4: 1.625rem;
-  --fs-5: 2.25rem;
-  --fs-6: clamp(2.5rem, 5.4vw, 4.25rem);
-  --fs-7: clamp(3rem, 8vw, 6.75rem);
-  --fs-8: clamp(3.75rem, 12vw, 10rem);
+  --fs-3: 1.2rem;
+  --fs-4: 1.5rem;
+  --fs-5: 2rem;
+  --fs-6: clamp(2.1rem, 4.4vw, 3.5rem);
+  --fs-7: clamp(2.5rem, 6vw, 5rem);
+  --fs-8: clamp(3rem, 9vw, 7.5rem);
 
   /* Spazi */
   --sp-1: 4px;
@@ -93,96 +93,106 @@
   --gutter: clamp(16px, 3.4vw, 48px);
   --hit: 48px;
 
-  /* Raggi */
-  --r-1: 6px;
-  --r-2: 10px;
-  --r-3: 14px;
-  --r-tile: 6px;
-  --r-btn: 6px;
+  /* Raggi: tutto tondo */
+  --r-1: 14px;
+  --r-2: 22px;
+  --r-3: 30px;
+  --r-tile: 999px;
+  --r-btn: 999px;
   --r-pill: 999px;
 
-  /* Bordi e ombre */
-  --bw: 1px;
-  --bw-strong: 2px;
-  --sh-1: 0 6px 18px #050a3c80;
-  --sh-2: 0 24px 70px #050a3c99;
-  --glow: 0 0 60px #7d96ff8c;
-  --glow-primary: 0 10px 36px #ffd35c52;
-  --tile-inset: inset 0 1px 0 #c9d3ff;
+  /* Bordi e ombre: nette, da insegna */
+  --bw: 2px;
+  --bw-strong: 3px;
+  --sh-1: 0 5px 0 #1d040f;
+  --sh-2: 0 24px 60px #0a0005b3;
+  --glow: 0 0 44px #ffd67873;
+  --glow-primary: 0 6px 0 #1d040f;
+  --tile-inset: inset 0 -6px 0 #e9cf96, 0 0 0 1px #ffc44d;
 
-  /* Movimento: energico, da studio televisivo */
-  --dur-1: 140ms;
-  --dur-2: 260ms;
+  /* Movimento: morbido ed elastico, da palcoscenico */
+  --dur-1: 160ms;
+  --dur-2: 280ms;
   --dur-3: 400ms;
-  --dur-show: 620ms;
-  --dur-lights: 5s;
-  --stagger: 55ms;
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-show: 900ms;
+  --dur-lights: 7s;
+  --stagger: 60ms;
+  --ease-out: cubic-bezier(0.25, 1, 0.4, 1);
   --ease-in: cubic-bezier(0.6, 0, 0.9, 0.3);
-  --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
+  --ease-pop: cubic-bezier(0.3, 1.7, 0.5, 1);
 
-  /* Scenografia */
-  --stage-bg: radial-gradient(ellipse 95% 75% at 50% 0%, var(--bg-glow) 0%, var(--bg-mid) 48%, var(--bg) 100%);
+  /* Scenografia: sipario di velluto */
+  --velvet: repeating-linear-gradient(90deg, #0000003b 0 2px, transparent 2px 46px, #ffffff0a 46px 92px);
+  --stage-bg: var(--velvet), radial-gradient(ellipse 90% 80% at 50% 30%, var(--bg-glow) 0%, var(--bg-mid) 50%, var(--bg) 100%);
   --stage-lights:
-    conic-gradient(from 148deg at 18% 0%, transparent 0deg, var(--light-a) 12deg, transparent 26deg),
-    conic-gradient(from 176deg at 82% 0%, transparent 0deg, var(--light-b) 12deg, transparent 26deg),
-    conic-gradient(from 164deg at 50% 0%, transparent 0deg, var(--light-c) 9deg, transparent 20deg);
+    conic-gradient(from 150deg at 22% 0%, transparent 0deg, var(--light-a) 12deg, transparent 26deg),
+    conic-gradient(from 176deg at 78% 0%, transparent 0deg, var(--light-b) 12deg, transparent 26deg),
+    conic-gradient(from 164deg at 50% 0%, transparent 0deg, var(--light-c) 10deg, transparent 22deg);
   --wall-bg: var(--sunk);
   --panel-bg: var(--surface);
 }
 
 /* ---------- Scenografia propria del tema ---------- */
 
-/* Sigla: tre lame di luce che attraversano lo schermo. */
+/* Sigla: il sipario si apre sulla manche. */
+.sigla { z-index: 3; }
 .sigla i {
   position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: 0;
-  width: 46%;
-  transform: translateX(-70vw) skewX(-18deg);
-  opacity: 0.9;
+  top: 0;
+  bottom: 0;
+  width: 51%;
+  background: var(--velvet), var(--neg);
+  box-shadow: 0 0 60px #000000a6;
 }
-.sigla i:nth-child(1) { background: var(--primary); }
-.sigla i:nth-child(2) { background: var(--tone, var(--tone-quiz)); }
-.sigla i:nth-child(3) { background: var(--text); width: 12%; }
-.view-enter .sigla i { animation: sigla-blade var(--dur-show) var(--ease-out) both; }
-.view-enter .sigla i:nth-child(2) { animation-delay: calc(var(--stagger) * 2); }
-.view-enter .sigla i:nth-child(3) { animation-delay: calc(var(--stagger) * 4); }
-@keyframes sigla-blade {
-  from { transform: translateX(-70vw) skewX(-18deg); }
-  to { transform: translateX(130vw) skewX(-18deg); }
+.sigla i:nth-child(1) { left: 0; border-right: 6px solid var(--primary); transform: translateX(-102%); }
+.sigla i:nth-child(2) { right: 0; border-left: 6px solid var(--primary); transform: translateX(102%); }
+.sigla i:nth-child(3) { display: none; }
+.view-enter .sigla i:nth-child(1) { animation: curtain-left var(--dur-show) cubic-bezier(0.6, 0, 0.2, 1) both; }
+.view-enter .sigla i:nth-child(2) { animation: curtain-right var(--dur-show) cubic-bezier(0.6, 0, 0.2, 1) both; }
+@keyframes curtain-left { from { transform: none; } 18% { transform: none; } to { transform: translateX(-102%); } }
+@keyframes curtain-right { from { transform: none; } 18% { transform: none; } to { transform: translateX(102%); } }
+
+/* Insegna: due file di lampadine che si rincorrono sopra e sotto il tabellone. */
+.bulbs {
+  flex: none;
+  height: 26px;
+  background-image:
+    radial-gradient(circle, var(--text) 0 4px, var(--primary) 5px, #ffc44d59 8px, transparent 11px),
+    radial-gradient(circle, #7a4a2a 0 5px, transparent 6px);
+  background-size: 56px 26px, 28px 26px;
+  animation: bulbs-chase 0.9s steps(1) infinite;
 }
+@keyframes bulbs-chase { 50% { background-position: 28px 0, 0 0; } }
 
-/* Il videowall ha un riflesso che lo attraversa a ogni ingresso. */
-.quiz-grid, .board { position: relative; overflow: hidden; }
-.view-enter .quiz-grid::after, .board::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 40%, var(--light-c) 50%, transparent 60%);
-  transform: translateX(-120%);
-  animation: wall-sweep calc(var(--dur-show) * 2) var(--ease-out) calc(var(--dur-show)) both;
-}
-@keyframes wall-sweep { to { transform: translateX(120%); } }
+/* Forme tonde al posto dei tagli obliqui. */
+.turn-line, .turn-ready-team .team-label { clip-path: none; border-radius: var(--r-pill); box-shadow: var(--sh-1); }
+.turn-ready-team .team-label { padding: 0.08em 0.5em 0.14em; }
+.quiz-column h2, .category h2 { background: transparent; color: var(--primary); border-bottom: var(--bw) solid var(--line-soft); border-radius: 0; font-family: var(--font-body); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.hero h1 span { display: inline-block; transform: rotate(-3deg); margin-bottom: 0.14em; }
+.prompt-card, .flash-question { border-color: var(--primary); }
+.quiz-clue-content .prompt-card { --answer-tilt: -2deg; transform: rotate(var(--answer-tilt)); }
+/* Shrikhand è più largo di un condensato: numeri e parole lunghe scendono di corpo. */
+.board .tile { font-size: clamp(0.8rem, 2.5vw, 2.3rem); }
+.list-answers .button { font-size: clamp(0.95rem, 1.5vw, 1.35rem); padding-inline: var(--sp-2); }
+.play-hud .total { font-size: clamp(1.25rem, 2.6vw, 2.25rem); }
+.result-row { border-left-width: 14px; }
 
-/* Le lampadine appartengono al tema «Varietà». */
-.bulbs { display: none; }
-
-/* Ingresso delle tessere: si ribaltano come pannelli di uno studio. */
+/* Ingresso delle tessere: le lampade si accendono sfarfallando. */
 @keyframes tile-in {
-  from { transform: perspective(700px) rotateX(-92deg); opacity: 0; }
-  to { transform: perspective(700px) rotateX(0); opacity: 1; }
+  0% { filter: brightness(0.25) saturate(0.4); transform: scale(0.9); }
+  30% { filter: none; }
+  45% { filter: brightness(0.3) saturate(0.4); }
+  70% { filter: none; transform: scale(1.04); }
+  100% { filter: none; transform: none; }
 }
-/* Rivelazione della risposta: il pannello si gira con un lampo. */
+/* Rivelazione della risposta: salta fuori dal fondo con un mezzo giro. */
 @keyframes answer-in {
-  0% { transform: perspective(900px) rotateX(-95deg); opacity: 0; }
-  60% { transform: perspective(900px) rotateX(8deg); opacity: 1; box-shadow: 0 0 0 14px #ffd35c59, 0 0 120px #ffd35ccc; }
-  100% { transform: none; opacity: 1; }
+  0% { transform: scale(0.2) rotate(-14deg); opacity: 0; }
+  60% { transform: scale(1.08) rotate(1deg); opacity: 1; box-shadow: 0 0 0 12px #ffc44d59, 0 0 110px #ffd678d9; }
+  100% { transform: rotate(var(--answer-tilt, 0deg)); opacity: 1; }
 }
-/* Titoli: entrano «sbattendo» verso lo spettatore. */
+/* Titoli: entrano ruotando, come un'insegna che si raddrizza. */
 @keyframes title-in {
-  from { transform: scale(1.7); opacity: 0; letter-spacing: 0.12em; }
-  to { transform: none; opacity: 1; letter-spacing: var(--display-track); }
+  from { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }

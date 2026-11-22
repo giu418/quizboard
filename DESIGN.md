@@ -170,6 +170,5 @@ In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`,
 - In «Solo quiz» i simboli Unicode delle categorie non vengono più mostrati (una sola famiglia di icone, in SVG).
 - I commit sono firmati `bskenzo` con l'email dell'utente perché git non ha un'identità configurata.
 - **Proposte in sospeso (fuori dai confini del redesign)**:
-  - effetti sonori (già in `IDEE.md`);
   - favicon: oggi manca (404 in console);
   - unificare `party.css` e `styles.css` in un solo foglio di token condiviso rientra nel redesign; unificare i *valori* del tabellone (1–5 contro 100–500) no, è logica.

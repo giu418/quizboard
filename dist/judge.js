@@ -25,7 +25,7 @@ function updateJudge() {
     judgeStatus.textContent = step === "ready"
       ? tr(`${activeTeam} si prepara.`, `${activeTeam} is getting ready.`)
       : tr(`Tocca a ${activeTeam}.`, `${activeTeam}’s turn.`);
-    judgePosition.textContent = `${tr("Proverbio", "Proverb")} ${progressCount(party.play.card + 1, round.hand)}`;
+    judgePosition.textContent = `${tr("Proverbio", "Proverb")} ${progressCount(party.play.card + 1, partyHand(round, party.teams.length))}`;
     judgeProverb.textContent = `${card[0].replace(/…$/u, "")} ${card[1]}`;
   } else {
     judgeStatus.textContent = t("In attesa del prossimo turno di Proverbi al volo.");

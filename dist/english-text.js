@@ -78,7 +78,7 @@ const englishText = {
   "Su": "Up",
   "Giù": "Down",
   "Quattro manche da giocare insieme sullo stesso schermo.": "Four rounds to play together on one screen.",
-  "Puoi giocare con 2–4 squadre.": "Play with 2–4 teams.",
+  "Puoi giocare con 2–6 squadre.": "Play with 2–6 teams.",
   "Le manche": "Rounds",
   "In sospeso": "On hold",
   "Scorciatoie di debug": "Debug shortcuts",

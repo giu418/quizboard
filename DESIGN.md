@@ -171,3 +171,10 @@ In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`,
 - I commit sono firmati `bskenzo` con l'email dell'utente perché git non ha un'identità configurata.
 - **Proposte in sospeso (fuori dai confini del redesign)**:
   - unificare `party.css` e `styles.css` in un solo foglio di token condiviso rientra nel redesign; unificare i *valori* del tabellone (1–5 contro 100–500) no, è logica.
+
+### Adattamento allo schermo e numero di squadre (22/11/2026)
+
+- **Niente pixel fissi**: token e componenti sono in `rem`. Sugli schermi larghi (da 960 px) la dimensione di base è `max(87.5%, min(1.25vw, 2vh))`: l'interfaccia mantiene le stesse proporzioni da un proiettore 1024×768 a una TV 4K. Sui telefoni resta la dimensione del browser.
+- **Ogni scena di gioco sta in una schermata** (verificato a 1024×768, 1366×768, 1600×900, 1920×950, 1920×1080, 2560×1440, 3840×2160). Solo la preparazione della serata può scorrere: il pulsante «Inizia la partita» resta agganciato in basso.
+- **Da 2 a 6 squadre** (richiesta dell'utente: ne sono previste 5). Il markup scrive `--n` su podi e classifiche e gli stili si regolano da lì. Colori `--team-4` e `--team-5` aggiunti.
+- **Modifica di logica, richiesta**: `maxTeams` passa da 4 a 6 e `partyHand()` in `party-data.js` accorcia la mano quando i mazzi non bastano (5 squadre: 7 carte di mimo e 14 domande lampo a testa; 6 squadre: 6 e 12). I proverbi restano 8. Oltre 6 squadre servono nuove carte.

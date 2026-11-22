@@ -18,6 +18,8 @@ const icons = {
   close: "M6 6l12 12M18 6 6 18",
   plus: "M12 5v14M5 12h14",
   restart: "M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5",
+  sound: "M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11",
+  mute: "M4 9h4l5-4v14l-5-4H4zM16.5 9.5l5 5M21.5 9.5l-5 5",
 };
 const ico = (name) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${icons[name]}"/></svg>`;
 

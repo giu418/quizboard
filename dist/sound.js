@@ -10,14 +10,17 @@
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
 
+  const storageKey = "quizboard-sound";
   let ctx = null;
   let master = null;
+  let muted = false;
+  try { muted = localStorage.getItem(storageKey) === "off"; } catch { /* senza memoria locale i suoni restano accesi */ }
 
   function unlock() {
     if (!ctx) {
       ctx = new AudioCtx();
       master = ctx.createGain();
-      master.gain.value = 0.3;
+      master.gain.value = muted ? 0 : 0.3;
       master.connect(ctx.destination);
     }
     if (ctx.state === "suspended") ctx.resume();
@@ -108,9 +111,35 @@
   };
 
   function play(name, ...args) {
-    if (!ctx || ctx.state !== "running") return;
+    if (muted || !ctx || ctx.state !== "running") return;
     const key = getComputedStyle(document.documentElement).getPropertyValue("--sound-theme").trim();
     (themes[key] || themes.studio)[name](...args);
+  }
+
+  // ---------- Pulsante per silenziare, accanto a quello della lingua ----------
+
+  const languageButton = document.querySelector("[data-language-toggle]");
+  if (languageButton) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "sound-toggle";
+    toggle.dataset.soundToggle = "";
+    const paint = () => {
+      toggle.innerHTML = ico(muted ? "mute" : "sound");
+      toggle.setAttribute("aria-pressed", String(muted));
+      toggle.setAttribute("aria-label", tr("Silenzia i suoni", "Mute sounds"));
+      toggle.title = muted ? tr("Suoni spenti", "Sounds off") : tr("Suoni accesi", "Sounds on");
+    };
+    toggle.addEventListener("click", () => {
+      muted = !muted;
+      try { localStorage.setItem(storageKey, muted ? "off" : "on"); } catch { /* vale solo per questa sessione */ }
+      if (master) master.gain.setTargetAtTime(muted ? 0 : 0.3, ctx.currentTime, 0.02);
+      paint();
+      if (!muted) play("correct");
+    });
+    window.addEventListener("quizboard-language", paint);
+    paint();
+    languageButton.before(toggle);
   }
 
   // ---------- Cosa osservare nella pagina ----------

@@ -97,6 +97,14 @@ Non esistono stati di caricamento: tutto è locale e sincrono (dati in file JS, 
 
 *Da scrivere dopo la scelta (Fase 2).*
 
+Indicazione ricevuta il 22/11/2026 durante la Fase 2: il design deve essere **molto più innovativo** e avere **varie animazioni in stile quiz televisivo**. Le tre proposte sul canvas sono quindi tutte televisive:
+
+- **A · Prima serata** — studio notturno blu e oro, videowall di tessere che si ribaltano, podi delle squadre, fascio di luce.
+- **B · Varietà** — sipario di velluto, insegna a lampadine che si rincorrono, tessere che si accendono, risposta su raggiera.
+- **C · In diretta** — grafica da regia: nero, tagli obliqui, categorie come corsie orizzontali, barra punteggi in sovrimpressione.
+
+Canvas: <https://claude.ai/artifact/DV9Q43ynSfNQtRXTqdj4QR>
+
 ## Token
 
 *Da definire in Fase 3.*

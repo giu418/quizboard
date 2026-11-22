@@ -1,6 +1,8 @@
 # DESIGN.md — redesign di Quizboard
 
-Stato: **Fase 2 in corso** (in attesa della scelta della direzione visiva).
+Stato: **Fasi 3–5 completate su questo branch**; resta la Fase 6 (verifica finale e pulizia) dopo i feedback.
+
+Il redesign segue **due filoni paralleli**, uno per branch: `prima-serata` e `varieta`. Markup, `ui.css` e script sono identici; cambia solo `dist/theme.css` (token, font e scenografia) e il `theme-color` delle pagine.
 
 ## Contesto
 
@@ -95,44 +97,66 @@ Non esistono stati di caricamento: tutto è locale e sincrono (dati in file JS, 
 
 ## Direzione
 
-*Da scrivere dopo la scelta (Fase 2).*
+Indicazioni ricevute (22/11/2026): molto più innovativo, **molto televisivo**, proiettato su una **televisione**, **molti movimenti**, **sigla a ogni manche**; la prima versione di «Prima serata» era troppo cupa. Canvas: <https://claude.ai/artifact/DV9Q43ynSfNQtRXTqdj4QR>
 
-Indicazione ricevuta il 22/11/2026 durante la Fase 2: il design deve essere **molto più innovativo** e avere **varie animazioni in stile quiz televisivo**. Le tre proposte sul canvas sono quindi tutte televisive:
+**Scelte comuni ai due filoni**
 
-- **A · Prima serata** — studio notturno blu e oro, videowall di tessere che si ribaltano, podi delle squadre, fascio di luce.
-- **B · Varietà** — sipario di velluto, insegna a lampadine che si rincorrono, tessere che si accendono, risposta su raggiera.
-- **C · In diretta** — grafica da regia: nero, tagli obliqui, categorie come corsie orizzontali, barra punteggi in sovrimpressione.
+- *Lo schermo è il palco*: in gioco spariscono intestazione e crediti, resta solo la scena. Motivo: le squadre guardano da lontano una TV.
+- *Podi delle squadre* in basso al posto della lista punti, nell'ordine delle squadre (non si spostano durante la manche); quello di turno si alza e pulsa. Nel quiz mostrano anche lo stato della carta.
+- *Tabellone come videowall*, casella a tutto schermo che si apre dalla tessera scelta.
+- *Comandi di chi conduce grandi* (64–72 px) e colorati per esito; una sola azione principale per scena.
+- *Timer gigante* nel colore della manche; negli ultimi 10 secondi diventa rosso e batte a ogni secondo.
+- *Sigla* a ogni introduzione di manche e al benvenuto; ingressi scenici a ogni cambio di scena (classe `view-enter`), mai a ogni semplice aggiornamento.
+- Deroga voluta alle «Regole per le animazioni»: il movimento decorativo non è limitato a uno o due momenti e la sigla dura circa 1,2 s. Restano valide: solo `transform`/`opacity`, nessuna azione aspetta un'animazione, `prefers-reduced-motion` spegne tutto.
 
-Canvas: <https://claude.ai/artifact/DV9Q43ynSfNQtRXTqdj4QR>
+**Prima serata** (`prima-serata`): studio televisivo blu elettrico con oro. Barlow Condensed maiuscolo per titoli e numeri (leggibile da lontano, stile tabellone sportivo), Barlow per i testi. Fasci di luce ciano, magenta e oro che oscillano; sigla a lame di luce; tessere che si ribaltano; risposta che si gira con un lampo; forme squadrate con tagli obliqui.
+
+**Varietà** (`varieta`): sabato sera a teatro. Velluto bordeaux, crema e oro; Shrikhand per i titoli, DM Sans per i testi. Sigla a sipario che si apre; insegna a lampadine che si rincorrono attorno al tabellone; tessere a pillola che si accendono sfarfallando; forme tonde con ombre nette.
 
 ## Token
 
-*Da definire in Fase 3.*
+Tutti in `dist/theme.css`, su `:root`. Valori del filone di questo branch nel file; ruoli:
+
+| Gruppo | Variabili |
+|---|---|
+| Fondo e superfici | `--bg`, `--bg-mid`, `--bg-glow`, `--surface`, `--surface-2`, `--surface-3`, `--sunk`, `--line`, `--line-soft`, `--backdrop` |
+| Testo | `--text`, `--muted`, `--faint` |
+| Primario e stati | `--primary`, `--primary-hi`, `--on-primary`, `--focus`, `--pos*`, `--neg*` |
+| Squadre e manche | `--team-0…3`, `--on-team`, `--tone-mime/quiz/flash/proverbs/list/song` |
+| Tessere | `--tile-bg`, `--tile-bg-hi`, `--tile-text`, `--tile-line`, `--tile-used-*`, `--tile-inset` |
+| Tipografia | `--font-display`, `--font-body`, `--display-weight/case/track/lh/shadow`, `--label-track`, scala `--fs-1…8` (0.875 rem → clamp fino a 10 rem) |
+| Spazi | `--sp-1…8` (4, 8, 12, 16, 24, 32, 48, 64 px), `--gutter`, `--hit` (48 px) |
+| Raggi | `--r-1`, `--r-2`, `--r-3`, `--r-tile`, `--r-btn`, `--r-pill` |
+| Ombre | `--sh-1`, `--sh-2`, `--glow`, `--glow-primary` |
+| Movimento | `--dur-1` 140 ms (controlli), `--dur-2` 260 ms (finestre), `--dur-3` 400 ms (scene), `--dur-show` 620 ms (sigla), `--dur-lights`, `--stagger` 55 ms, `--ease-out`, `--ease-in`, `--ease-pop` |
+| Scenografia | `--stage-bg`, `--stage-lights`, `--light-a/b/c`, `--light-blur`, `--wall-bg`, `--panel-bg` |
+
+In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`, e i keyframe `tile-in`, `answer-in`, `title-in`.
 
 ## Schermate
 
-- [ ] Elementi condivisi (pulsanti, campi, link, card, intestazioni, cornice finestre)
-- [ ] 1 · Configurazione squadre e manche
-- [ ] 2 · Benvenuto
-- [ ] 3 · Introduzione manche
-- [ ] 4 · Turno a tempo · si prepara
-- [ ] D1 · Carta del mimo
-- [ ] 5 · Turno a tempo · attivo (mime, flash, proverbs)
-- [ ] 6 · Turno a tempo · concluso
-- [ ] 9 · Tabellone quiz
-- [ ] D2 · Casella del quiz (tutti gli stati)
-- [ ] 7–8 · Sfida delle liste
-- [ ] 10 · Risultati manche
-- [ ] 11 · Classifica finale
-- [ ] 12 · HUD di gioco
-- [ ] D3 · Conferma «Nuova serata»
-- [ ] 13 · Solo quiz (configurazione, gioco, finito)
-- [ ] D4 · Domanda (solo quiz)
-- [ ] D5 · Conferma «Nuova partita»
-- [ ] 14 · Scheda del giudice
-- [ ] Modalità debug (barra «Vai a…», roadmap, elenco manche)
-- [ ] Animazioni (Fase 5)
-- [ ] Verifica finale (Fase 6)
+- [x] Elementi condivisi (pulsanti, campi, link, card, intestazioni, cornice finestre)
+- [x] 1 · Configurazione squadre e manche
+- [x] 2 · Benvenuto
+- [x] 3 · Introduzione manche
+- [x] 4 · Turno a tempo · si prepara
+- [x] D1 · Carta del mimo
+- [x] 5 · Turno a tempo · attivo (mime, flash, proverbs)
+- [x] 6 · Turno a tempo · concluso
+- [x] 9 · Tabellone quiz
+- [x] D2 · Casella del quiz (tutti gli stati)
+- [x] 7–8 · Sfida delle liste
+- [x] 10 · Risultati manche
+- [x] 11 · Classifica finale
+- [x] 12 · HUD di gioco
+- [x] D3 · Conferma «Nuova serata»
+- [x] 13 · Solo quiz (configurazione, gioco, finito)
+- [x] D4 · Domanda (solo quiz)
+- [x] D5 · Conferma «Nuova partita»
+- [x] 14 · Scheda del giudice
+- [x] Modalità debug (barra «Vai a…», roadmap, elenco manche)
+- [x] Animazioni (Fase 5)
+- [ ] Verifica finale (Fase 6): tastiera completa, pulizia finale, resoconto
 
 ## Decisioni e ipotesi
 
@@ -140,6 +164,10 @@ Canvas: <https://claude.ai/artifact/DV9Q43ynSfNQtRXTqdj4QR>
 - **Ipotesi**: il logo attuale (quadrato oro con quattro punti, uno attenuato) e il nome «Quizboard» restano.
 - **Ipotesi**: i quattro colori squadra restano distinguibili fra loro e sempre accompagnati dal nome (mai solo colore).
 - `dist/audio/estratto-*.mp3` e la manche «La parola mancante» sono sospesi: non compaiono nel gioco e non vengono ridisegnati.
+- **Ipotesi**: la TV è collegata a internet. I font arrivano da Google Fonts con `display=swap`; senza rete l'app usa i caratteri di sistema. Proposta: copiare i font in `dist/fonts`.
+- Modifiche agli script, solo di presentazione: icone SVG (`icons`/`ico()` in `language.js`), classi `view-enter`/`card-enter`/`bump`/`urgent`, attributo `data-look` e origine `--ox/--oy` delle finestre, podi con stato della carta, pulsante di chiusura nella casella del quiz, focus che torna alla casella. Nessuna modifica a regole, punteggi, salvataggi, testi.
+- In «Solo quiz» i simboli Unicode delle categorie non vengono più mostrati (una sola famiglia di icone, in SVG).
+- I commit sono firmati `bskenzo` con l'email dell'utente perché git non ha un'identità configurata.
 - **Proposte in sospeso (fuori dai confini del redesign)**:
   - effetti sonori (già in `IDEE.md`);
   - favicon: oggi manca (404 in console);

@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Un quiz a squadre con sei categorie e punteggi in tempo reale." data-i18n-attrs="content">
-  <meta name="theme-color" content="#0b142b">
+  <meta name="theme-color" content="#0b1250">
   <title data-i18n>Quizboard — Quiz a squadre</title>
-  <link rel="stylesheet" href="styles.css?v=photos">
-  <link rel="stylesheet" href="language.css">
+  <link rel="stylesheet" href="theme.css?v=redesign">
+  <link rel="stylesheet" href="ui.css?v=redesign">
   <script src="english-text.js?v=photos" defer></script>
   <script src="english-content.js?v=photos" defer></script>
   <script src="language.js" defer></script>
   <script src="questions.js" defer></script>
   <script src="mintaka.js" defer></script>
   <script src="photo-questions.js" defer></script>
-  <script src="game.js?v=photos" defer></script>
+  <script src="game.js?v=redesign" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -24,7 +24,7 @@
         Quizboard
       </a>
       <div class="header-actions">
-        <button class="button quiet" id="new-game" type="button"><span aria-hidden="true">↻</span> <span data-i18n>Nuova partita</span></button>
+        <button class="button quiet" id="new-game" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5"/></svg> <span data-i18n>Nuova partita</span></button>
         <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English">EN</button>
       </div>
     </div>
@@ -50,7 +50,7 @@
           <p data-i18n>Aggiungi giocatori o squadre nell’ordine in cui giocheranno.</p>
           <form id="team-form">
             <div class="team-inputs" id="team-inputs"></div>
-            <button class="button add" id="add-team" type="button"><span aria-hidden="true">+</span> <span data-i18n>Aggiungi una squadra</span></button>
+            <button class="button add" id="add-team" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> <span data-i18n>Aggiungi una squadra</span></button>
             <button data-i18n class="button primary" type="submit">Inizia la partita</button>
           </form>
         </section>
@@ -107,7 +107,7 @@
     <h2 data-i18n id="reset-heading">Iniziare una nuova partita?</h2>
     <p data-i18n>I punteggi verranno azzerati e tutte le caselle torneranno disponibili.</p>
     <div class="reset-actions">
-      <button data-i18n class="button quiet" id="cancel-reset" type="button" autofocus>Continua a giocare</button>
+      <button data-i18n class="button ghost" id="cancel-reset" type="button" autofocus>Continua a giocare</button>
       <button data-i18n class="button primary" id="confirm-reset" type="button">Nuova partita</button>
     </div>
   </dialog>

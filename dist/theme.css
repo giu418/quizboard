@@ -1,0 +1,188 @@
+/* Tema «Prima serata»: studio televisivo blu elettrico e oro.
+   Unico punto in cui vivono i token; ui.css usa solo queste variabili. */
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@700;800&display=swap");
+
+:root {
+  color-scheme: dark;
+
+  /* Colori: fondo e superfici */
+  --bg: #0b1250;
+  --bg-mid: #1f31b8;
+  --bg-glow: #3d58f0;
+  --surface: #16238a;
+  --surface-2: #2438c8;
+  --surface-3: #4560f0;
+  --sunk: #0b1250;
+  --line: #9db0ff;
+  --line-soft: #3b50c8;
+  --backdrop: #050a3ccc;
+
+  /* Colori: testo */
+  --text: #ffffff;
+  --muted: #e3e9ff;
+  --faint: #9db0ff;
+
+  /* Colori: primario e stati */
+  --primary: #ffd35c;
+  --primary-hi: #ffe59a;
+  --on-primary: #1b1403;
+  --focus: #ffffff;
+  --pos: #136f45;
+  --pos-hi: #1a8a57;
+  --pos-line: #5fd39a;
+  --on-pos: #f1fff7;
+  --neg: #a32a44;
+  --neg-hi: #bd3552;
+  --neg-line: #ff8fa6;
+  --on-neg: #fff1f3;
+
+  /* Colori: squadre e manche */
+  --team-0: #b7a2ff;
+  --team-1: #ff9f8a;
+  --team-2: #8fd6f5;
+  --team-3: #a9e59a;
+  --on-team: #0b1250;
+  --tone-mime: #ff9f8a;
+  --tone-quiz: #b7a2ff;
+  --tone-song: #f9cc81;
+  --tone-flash: #7de3ff;
+  --tone-proverbs: #a9e59a;
+  --tone-list: #ffd35c;
+  --light-a: #7de3ff47;
+  --light-b: #ff78dc40;
+  --light-c: #ffe3a338;
+  --light-blur: 22px;
+
+  /* Tessere del tabellone */
+  --tile-bg: linear-gradient(180deg, #6a84ff 0%, #2438c8 100%);
+  --tile-bg-hi: linear-gradient(180deg, #8ea2ff 0%, #3550e0 100%);
+  --tile-text: #ffd966;
+  --tile-text-shadow: 0 0.04em 0 #0b1250;
+  --tile-line: #c9d3ff;
+  --tile-used-bg: #111c7a;
+  --tile-used-line: #3b50c8;
+  --tile-used-text: #9db0ff;
+
+  /* Tipografia */
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", system-ui, sans-serif;
+  --display-weight: 800;
+  --display-case: uppercase;
+  --display-track: 0.01em;
+  --display-lh: 0.94;
+  --display-shadow: 0 0.04em 0 #0b1250;
+  --label-track: 0.14em;
+  --fs-1: 0.875rem;
+  --fs-2: 1rem;
+  --fs-3: 1.25rem;
+  --fs-4: 1.625rem;
+  --fs-5: 2.25rem;
+  --fs-6: clamp(2.5rem, 5.4vw, 4.25rem);
+  --fs-7: clamp(3rem, 8vw, 6.75rem);
+  --fs-8: clamp(3.75rem, 12vw, 10rem);
+
+  /* Spazi */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --gutter: clamp(16px, 3.4vw, 48px);
+  --hit: 48px;
+
+  /* Raggi */
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-3: 14px;
+  --r-tile: 6px;
+  --r-btn: 6px;
+  --r-pill: 999px;
+
+  /* Bordi e ombre */
+  --bw: 1px;
+  --bw-strong: 2px;
+  --sh-1: 0 6px 18px #050a3c80;
+  --sh-2: 0 24px 70px #050a3c99;
+  --glow: 0 0 60px #7d96ff8c;
+  --glow-primary: 0 10px 36px #ffd35c52;
+  --tile-inset: inset 0 1px 0 #c9d3ff;
+
+  /* Movimento: energico, da studio televisivo */
+  --dur-1: 140ms;
+  --dur-2: 260ms;
+  --dur-3: 400ms;
+  --dur-show: 620ms;
+  --dur-lights: 5s;
+  --stagger: 55ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.6, 0, 0.9, 0.3);
+  --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
+
+  /* Scenografia */
+  --stage-bg: radial-gradient(ellipse 95% 75% at 50% 0%, var(--bg-glow) 0%, var(--bg-mid) 48%, var(--bg) 100%);
+  --stage-lights:
+    conic-gradient(from 148deg at 18% 0%, transparent 0deg, var(--light-a) 12deg, transparent 26deg),
+    conic-gradient(from 176deg at 82% 0%, transparent 0deg, var(--light-b) 12deg, transparent 26deg),
+    conic-gradient(from 164deg at 50% 0%, transparent 0deg, var(--light-c) 9deg, transparent 20deg);
+  --wall-bg: var(--sunk);
+  --panel-bg: var(--surface);
+}
+
+/* ---------- Scenografia propria del tema ---------- */
+
+/* Sigla: tre lame di luce che attraversano lo schermo. */
+.sigla i {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 46%;
+  transform: translateX(-70vw) skewX(-18deg);
+  opacity: 0.9;
+}
+.sigla i:nth-child(1) { background: var(--primary); }
+.sigla i:nth-child(2) { background: var(--tone, var(--tone-quiz)); }
+.sigla i:nth-child(3) { background: var(--text); width: 12%; }
+.view-enter .sigla i { animation: sigla-blade var(--dur-show) var(--ease-out) both; }
+.view-enter .sigla i:nth-child(2) { animation-delay: calc(var(--stagger) * 2); }
+.view-enter .sigla i:nth-child(3) { animation-delay: calc(var(--stagger) * 4); }
+@keyframes sigla-blade {
+  from { transform: translateX(-70vw) skewX(-18deg); }
+  to { transform: translateX(130vw) skewX(-18deg); }
+}
+
+/* Il videowall ha un riflesso che lo attraversa a ogni ingresso. */
+.quiz-grid, .board { position: relative; overflow: hidden; }
+.view-enter .quiz-grid::after, .board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, var(--light-c) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: wall-sweep calc(var(--dur-show) * 2) var(--ease-out) calc(var(--dur-show)) both;
+}
+@keyframes wall-sweep { to { transform: translateX(120%); } }
+
+/* Le lampadine appartengono al tema «Varietà». */
+.bulbs { display: none; }
+
+/* Ingresso delle tessere: si ribaltano come pannelli di uno studio. */
+@keyframes tile-in {
+  from { transform: perspective(700px) rotateX(-92deg); opacity: 0; }
+  to { transform: perspective(700px) rotateX(0); opacity: 1; }
+}
+/* Rivelazione della risposta: il pannello si gira con un lampo. */
+@keyframes answer-in {
+  0% { transform: perspective(900px) rotateX(-95deg); opacity: 0; }
+  60% { transform: perspective(900px) rotateX(8deg); opacity: 1; box-shadow: 0 0 0 14px #ffd35c59, 0 0 120px #ffd35ccc; }
+  100% { transform: none; opacity: 1; }
+}
+/* Titoli: entrano «sbattendo» verso lo spettatore. */
+@keyframes title-in {
+  from { transform: scale(1.7); opacity: 0; letter-spacing: 0.12em; }
+  to { transform: none; opacity: 1; letter-spacing: var(--display-track); }
+}

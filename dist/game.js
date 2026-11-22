@@ -49,6 +49,7 @@ function buildBoard() {
   const board = get("board");
   const questionSet = game?.questionSet ?? defaultQuestionSet;
   board.replaceChildren();
+  board.classList.add("board-enter");
   clues = [];
   tiles = [];
   for (const [columnIndex, category] of questionSets[questionSet].entries()) {
@@ -56,11 +57,7 @@ function buildBoard() {
     const column = document.createElement("section");
     column.className = "category";
     const heading = document.createElement("h2");
-    const symbol = document.createElement("span");
-    symbol.className = "category-symbol";
-    symbol.setAttribute("aria-hidden", "true");
-    symbol.textContent = category.symbol;
-    heading.append(symbol, categoryName);
+    heading.append(categoryName);
     column.append(heading);
 
     category.clues.forEach((pair, row) => {
@@ -71,7 +68,14 @@ function buildBoard() {
       const tile = document.createElement("button");
       tile.type = "button";
       tile.className = "tile";
-      tile.addEventListener("click", () => openClue(clue));
+      tile.style.setProperty("--i", columnIndex + row);
+      tile.addEventListener("click", () => {
+        // La finestra si apre dalla casella scelta.
+        const box = tile.getBoundingClientRect();
+        clueDialog.style.setProperty("--ox", `${box.left + box.width / 2}px`);
+        clueDialog.style.setProperty("--oy", `${box.top + box.height / 2}px`);
+        openClue(clue);
+      });
       tiles.push(tile);
       column.append(tile);
     });
@@ -102,9 +106,9 @@ function addTeamField(name = "", focus = false) {
   input.autocomplete = "off";
   input.value = name;
   const remove = document.createElement("button");
-  remove.className = "button remove";
+  remove.className = "icon-button remove";
   remove.type = "button";
-  remove.textContent = "×";
+  remove.innerHTML = ico("close");
   remove.addEventListener("click", () => {
     const neighbor = row.nextElementSibling ?? row.previousElementSibling;
     row.remove();
@@ -132,7 +136,8 @@ function renderGame() {
     const used = played.includes(clue.id);
     tile.disabled = !game || used;
     tile.classList.toggle("played", used);
-    tile.textContent = used ? "✓" : clue.value;
+    if (used) tile.innerHTML = ico("check");
+    else tile.textContent = clue.value;
     tile.setAttribute("aria-label", `${clue.category}, ${clue.value} ${pointLabel(clue.value)}${used ? t(", già giocata") : ""}`);
   }
   if (!game) return;

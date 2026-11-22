@@ -6,6 +6,21 @@ try {
   // The selector still works if browser storage is unavailable.
 }
 
+// Unica famiglia di icone dell'interfaccia, in SVG.
+const icons = {
+  mime: "M4 10h16v9H4zM4 10l2-5 3 5M9.5 5l3 5M14 5l3 5",
+  quiz: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+  song: "M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
+  flash: "M13 3 5 14h6l-1 7 8-11h-6z",
+  proverbs: "M5 17c3 0 4-2 4-5V7H4v5h3M15 17c3 0 4-2 4-5V7h-5v5h3",
+  list: "M9 6h11M9 12h11M9 18h11M4 6h1M4 12h1M4 18h1",
+  check: "M5 12.5 10 17.5 19 7",
+  close: "M6 6l12 12M18 6 6 18",
+  plus: "M12 5v14M5 12h14",
+  restart: "M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5",
+};
+const ico = (name) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${icons[name]}"/></svg>`;
+
 const tr = (italian, english) => language === "en" ? english : italian;
 const t = (italian) => tr(italian, Object.hasOwn(englishText, italian) ? englishText[italian] : italian);
 const displayNumbers = {

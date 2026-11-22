@@ -32,6 +32,11 @@ let teamDraft = ["", ""];
 let roundOrderDraft = [...defaultRoundOrder];
 let selectedRounds = [...defaultRoundOrder];
 let stageFocus = false;
+// Solo presentazione: servono a far partire le animazioni quando cambia la scena.
+let lastViewKey = null;
+let lastCardKey = null;
+let lastScores = null;
+let movedRound = null;
 
 function readParty() {
   try {
@@ -180,7 +185,7 @@ function totalScores() {
 }
 
 function icon(round) {
-  return `<span class="round-icon tone-${round.id}" aria-hidden="true">${round.icon}</span>`;
+  return `<span class="round-icon tone-${round.id}" aria-hidden="true">${ico(round.id)}</span>`;
 }
 
 function teamChip(index) {
@@ -195,10 +200,10 @@ function teamForm() {
           <div class="team-field ${teamClass(index)}">
             <label for="team-name-${index}">${teamName(index)}</label>
             <input id="team-name-${index}" type="text" maxlength="40" autocomplete="off" placeholder="${t("Nome della squadra")}" value="${esc(name)}">
-            ${teamDraft.length > minTeams ? `<button type="button" class="remove-team" data-action="remove-team" data-index="${index}" aria-label="${tr(`Rimuovi squadra ${index + 1}`, `Remove team ${index + 1}`)}">×</button>` : ""}
+            ${teamDraft.length > minTeams ? `<button type="button" class="icon-button remove-team" data-action="remove-team" data-index="${index}" aria-label="${tr(`Rimuovi squadra ${index + 1}`, `Remove team ${index + 1}`)}">${ico("close")}</button>` : ""}
           </div>`).join("")}
       </div>
-      ${teamDraft.length < maxTeams ? `<button type="button" class="button ghost" data-action="add-team"><span aria-hidden="true">＋</span> ${t("Aggiungi squadra")}</button>` : ""}
+      ${teamDraft.length < maxTeams ? `<button type="button" class="button ghost" data-action="add-team">${ico("plus")} ${t("Aggiungi squadra")}</button>` : ""}
       ${roundOrderView()}
       <button class="button primary team-start" type="submit">${t("Inizia la partita")}</button>
     </form>`;
@@ -211,7 +216,8 @@ function roundOrderView() {
       ${roundOrderDraft.map((index, position) => {
         const round = partyRounds[index];
         const enabled = selectedRounds.includes(index);
-        return `<li role="listitem">
+        const moved = movedRound?.index === index ? ` class="moved" style="--dir: ${movedRound.dir}"` : "";
+        return `<li role="listitem"${moved}>
           <span class="round-position" aria-hidden="true">${position + 1}</span>
           ${icon(round)}
           <label class="round-choice"><input type="checkbox" data-round-selection="${index}" ${enabled ? "checked" : ""} ${enabled && selectedRounds.length === 1 ? "disabled" : ""}> <strong>${esc(t(round.title))}</strong></label>
@@ -279,7 +285,7 @@ function roadmap() {
     ${rounds.map((index) => {
       const round = partyRounds[index];
       const done = Boolean(state.history[index]);
-      return `<li class="tone-${round.id}${done ? " done" : ""}" ${index === state.round && state.phase !== "final" ? 'aria-current="step"' : ""}><span aria-hidden="true">${done ? "✓" : round.icon}</span>${t(round.short)}${done ? `<span class="sr-only"> ${t("completata")}</span>` : ""}</li>`;
+      return `<li class="tone-${round.id}${done ? " done" : ""}" ${index === state.round && state.phase !== "final" ? 'aria-current="step"' : ""}><span aria-hidden="true">${ico(done ? "check" : round.id)}</span>${t(round.short)}${done ? `<span class="sr-only"> ${t("completata")}</span>` : ""}</li>`;
     }).join("")}
   </ol>`;
 }
@@ -299,11 +305,19 @@ function roundTitle(title, end = "") {
   </div>`;
 }
 
-function standings(scores, activeTeam = -1) {
+function standings(scores, activeTeam = -1, hud = false) {
+  // Nel gioco i podi restano nell'ordine delle squadre, così nessuno cambia posto durante la manche.
+  const entries = hud ? scores.map((score, team) => ({ score, team })) : ranked(scores);
+  const cards = hud && roundNow().id === "quiz";
   return `<ol class="standings">
-      ${ranked(scores).map(({ team, score }) => `<li class="${teamClass(team)}${team === activeTeam ? " current" : ""}">
+      ${entries.map(({ team, score }) => {
+        const used = cards ? state.play.cards?.[team] : null;
+        const bump = hud && lastScores && lastScores[team] !== undefined && lastScores[team] !== score;
+        return `<li class="${teamClass(team)}${team === activeTeam ? " current" : ""}${bump ? " bump" : ""}">
         ${teamChip(team)}<strong class="total">${formatNumber(score)} pt</strong>
-      </li>`).join("")}
+        ${cards ? `<small>${used ? `${tr("Carta usata", "Card used")} · ${t(quizEffects[used.effect].name)}` : t("Carta disponibile")}</small>` : ""}
+      </li>`;
+      }).join("")}
     </ol>`;
 }
 
@@ -319,7 +333,7 @@ function halftimeStandings() {
 
 function turnLine(label) {
   const index = teamOnTurn();
-  return `<div class="turn-box"><div class="turn-line"><span>${label}</span>${teamChip(index)}</div></div>`;
+  return `<div class="turn-box ${teamClass(index)}"><div class="turn-line"><span>${label}</span>${teamChip(index)}</div></div>`;
 }
 
 function timer() {
@@ -332,7 +346,8 @@ function timer() {
 
 function introView() {
   const round = roundNow();
-  return `<div class="intro-content">
+  return `<div class="sigla" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="intro-content">
       ${roundTitle(t(round.title))}
       <div class="intro-rules">
         <p>${t(round.rules)}</p>
@@ -360,7 +375,7 @@ function readyTurnView(round) {
   return `<div class="turn-ready">
     <div class="turn-ready-team">
       <p class="kicker">${t("Si prepara")}</p>
-      <h2>${teamChip(teamOnTurn())}</h2>
+      <h2 class="${teamClass(teamOnTurn())}">${teamChip(teamOnTurn())}</h2>
       <p class="turn-count">${tr("Turno", "Turn")} ${progressCount(state.play.turn + 1, state.teams.length)}</p>
     </div>
     <div class="turn-ready-controls">
@@ -403,7 +418,7 @@ function timedView() {
     const reveal = play.reveal;
     output.push(`<div class="flash-question${reveal ? ` ${reveal.correct ? "flash-correct" : "flash-incorrect"}` : ""}">
       <p class="prompt">${esc(card[0])}</p>
-      ${reveal ? `<p class="flash-verdict"><span aria-hidden="true">${reveal.correct ? "✓" : "✕"}</span> ${flashVerdict(reveal.correct, card[1])}</p>` : ""}
+      ${reveal ? `<p class="flash-verdict">${ico(reveal.correct ? "check" : "close")} ${flashVerdict(reveal.correct, card[1])}</p>` : ""}
     </div>
     <div class="actions"><button type="button" class="button ghost" data-action="end-turn" ${reveal ? "disabled" : ""}>${t("Termina turno")}</button></div>`);
     return output.join("");
@@ -425,9 +440,11 @@ function listView() {
   const play = state.play;
   if (play.category === null) {
     return `${roundTitle(t("La sfida delle liste"))}
+      <div class="list-pick">
       <p class="stage-copy">${tr("Scegli una categoria per la manche.", "Choose a category for this round.")}</p>
-      <div class="actions spaced">${listCategories.map((category, index) => `
-        <button type="button" class="button secondary" data-action="list-category" data-index="${index}">${esc(category[language])}</button>`).join("")}</div>`;
+      <div class="actions">${listCategories.map((category, index) => `
+        <button type="button" class="button secondary" style="--i: ${index}" data-action="list-category" data-index="${index}">${esc(category[language])}</button>`).join("")}</div>
+      </div>`;
   }
   const category = listCategories[play.category];
   return `${roundTitle(t("La sfida delle liste"))}
@@ -436,7 +453,7 @@ function listView() {
     <p class="panel-note">${tr("Chi conduce seleziona la risposta detta dalla squadra.", "The host selects the answer given by the team.")}</p>
     <div class="list-answers" aria-label="${tr("Risposte valide", "Valid answers")}">
       ${category.answers.map((answer, index) => `
-        <button type="button" class="button secondary" data-action="list-answer" data-index="${index}" ${play.used.includes(index) ? "disabled" : ""}>${esc(answer[language === "en" ? 1 : 0])}${play.used.includes(index) ? " ✓" : ""}</button>`).join("")}
+        <button type="button" class="button secondary" style="--i: ${index}" data-action="list-answer" data-index="${index}" ${play.used.includes(index) ? "disabled" : ""}>${esc(answer[language === "en" ? 1 : 0])}${play.used.includes(index) ? ` ${ico("check")}` : ""}</button>`).join("")}
     </div>
     <p class="panel-note">${tr("Risposte trovate", "Answers found")} ${play.used.length} / ${category.answers.length} · ${tr("Passaggi consecutivi", "Consecutive passes")} ${play.passes} / ${state.teams.length}</p>
     <div class="actions spaced"><button type="button" class="button ghost" data-action="list-pass">${t("Passa")}</button></div>`;
@@ -461,10 +478,10 @@ function quizView() {
   const taken = state.play.used;
   const lockedTile = quizCardOnTile() ? state.play.selected : null;
   return `${roundTitle(t("Tabellone quiz"))}
-    ${turnLine(t("Sceglie"))}
-    <p class="turn-count">${tr("Caselle giocate", "Tiles played")}: ${progressCount(taken.length, quizTileCount)}</p>
-    ${quizCardStatus()}
+    <div class="quiz-meta">${turnLine(t("Sceglie"))}
+    <p class="turn-count">${tr("Caselle giocate", "Tiles played")}: ${progressCount(taken.length, quizTileCount)}</p></div>
     ${lockedTile !== null ? `<p class="turn-count">${t("Completa la casella con la carta attiva.")}</p>` : ""}
+    <div class="bulbs" aria-hidden="true"></div>
     <div class="quiz-grid" aria-label="${t("Categorie del quiz")}">
       ${partyQuizCategories.map((category, column) => `
         <section class="quiz-column">
@@ -473,10 +490,11 @@ function quizView() {
             const i = column * category.clues.length + row;
             const used = taken.includes(i);
             const value = row + 1;
-            return `<button type="button" class="quiz-tile${used ? " used" : ""}" data-action="quiz-open" data-index="${i}" aria-label="${esc(quizCategoryName(category.name))}, ${value} ${pointLabel(value)}${used ? t(", già giocata") : lockedTile === i ? t(", carta attiva") : ""}" ${used || (lockedTile !== null && lockedTile !== i) ? "disabled" : ""}>${used ? "✓" : value}</button>`;
+            return `<button type="button" class="quiz-tile${used ? " used" : ""}" style="--i: ${column + row}" data-action="quiz-open" data-index="${i}" aria-label="${esc(quizCategoryName(category.name))}, ${value} ${pointLabel(value)}${used ? t(", già giocata") : lockedTile === i ? t(", carta attiva") : ""}" ${used || (lockedTile !== null && lockedTile !== i) ? "disabled" : ""}>${used ? ico("check") : value}</button>`;
           }).join("")}
         </section>`).join("")}
-    </div>`;
+    </div>
+    <div class="bulbs" aria-hidden="true"></div>`;
 }
 
 function resultsView(final = false) {
@@ -489,7 +507,7 @@ function resultsView(final = false) {
   return `${roundTitle(title)}
     <p class="stage-copy">${final ? outcome : t("I punti della serata dipendono dal piazzamento in questa manche. Le squadre a pari merito si dividono i punti dei posti occupati.")}</p>
     <ol class="result-table ${final ? "final-table" : ""}">
-      ${entries.map(({ score, team, place, points }) => `<li class="result-row">
+      ${entries.map(({ score, team, place, points }, position) => `<li class="result-row ${teamClass(team)}${place === 1 ? " winner" : ""}" style="--rev: ${entries.length - 1 - position}">
         <span class="result-place" aria-label="${tr("Posizione", "Place")} ${place}">${tr(`${place}°`, englishPlace(place))}</span>
         ${teamChip(team)}
         <div class="result-values"><strong class="total">${final ? formatNumber(score) : `+${formatNumber(points)}`} pt</strong>
@@ -508,6 +526,16 @@ function render() {
   const welcome = state?.phase === "welcome";
   app.classList.toggle("play-view", playing);
   app.classList.toggle("intro-view", intro || welcome);
+  app.classList.toggle("results-view", ["results", "final"].includes(state?.phase));
+  // Le animazioni d'ingresso partono solo quando cambia la scena, non a ogni aggiornamento.
+  const viewKey = state ? [state.phase, state.round, state.play.step ?? "", state.play.step === "ready" ? state.play.turn : "", state.play.category ?? ""].join("|") : "setup";
+  const cardKey = state?.phase === "play" ? [state.play.card ?? "", state.play.reveal ? 1 : 0, state.play.feedback ?? ""].join("|") : "";
+  app.classList.remove("view-enter", "card-enter");
+  void app.offsetWidth;
+  app.classList.toggle("view-enter", viewKey !== lastViewKey);
+  app.classList.toggle("card-enter", viewKey === lastViewKey && cardKey !== lastCardKey);
+  lastViewKey = viewKey;
+  lastCardKey = cardKey;
   document.getElementById("reset-button").hidden = !state;
   const previousAction = document.activeElement?.dataset.action;
   if (!state) {
@@ -529,7 +557,7 @@ function render() {
         <div class="play-hud">
           <aside aria-labelledby="round-scores-title">
             <h2 class="round-scores-title" id="round-scores-title">${t("Punti della manche")}</h2>
-            ${standings(state.scores, state.play.step === "done" ? -1 : teamOnTurn())}
+            ${standings(state.scores, state.play.step === "done" ? -1 : teamOnTurn(), true)}
           </aside>
           <button type="button" class="button secondary reset" data-action="ask-reset">${t("Nuova serata")}</button>
         </div>
@@ -538,6 +566,7 @@ function render() {
       ${welcome ? "" : roadmap()}
       ${welcome ? "" : debugRoundMenu()}
       <section class="panel stage ${welcome ? "tone-quiz intro-stage" : `tone-${id}${intro ? " intro-stage" : ""}`}" aria-labelledby="stage-title">${view}</section>`;
+    lastScores = playing ? [...state.scores] : null;
     updateClock();
     if (stageFocus) app.querySelector("#stage-title").focus();
     else if (previousAction && !dialog.open) {
@@ -545,6 +574,7 @@ function render() {
     }
   }
   stageFocus = false;
+  movedRound = null;
 }
 
 function refresh(focus = false) {
@@ -554,10 +584,11 @@ function refresh(focus = false) {
 }
 
 function welcomeView() {
-  return `<div class="intro-content">
+  return `<div class="sigla" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="intro-content">
     <div class="stage-header"><h1 id="stage-title" tabindex="-1">${tr("Benvenuti alla serata giochi!", "Welcome to game night!")}</h1></div>
     <div class="intro-rules"><p>${tr("Le squadre sono pronte. Che la serata abbia inizio!", "The teams are ready. Let game night begin!")}</p></div>
-    <div class="welcome-teams">${state.teams.map((_, index) => teamChip(index)).join("")}</div>
+    <div class="welcome-teams">${state.teams.map((_, index) => `<span style="--i: ${index}" class="${teamClass(index)} team-label">${esc(state.teams[index])}</span>`).join("")}</div>
   </div>
   <div class="actions intro-actions"><button type="button" class="button primary" data-action="start-evening">${tr("Cominciamo", "Let's begin")}</button></div>`;
 }
@@ -586,10 +617,11 @@ function prepareTimedTurn(turn) {
 
 function openDialog(kind, markup) {
   dialog.dataset.kind = kind;
+  dialog.dataset.look = kind;
   dialog.className = `tone-${state ? roundNow().id : "quiz"}`;
   dialog.innerHTML = markup;
   if (!dialog.open) dialog.showModal();
-  (dialog.querySelector("[autofocus]") || dialog.querySelector("button"))?.focus();
+  (dialog.querySelector("[autofocus]") || dialog.querySelector(".actions button") || dialog.querySelector("button"))?.focus();
 }
 
 function hideDialog() {
@@ -598,12 +630,15 @@ function hideDialog() {
 }
 
 function closeDialog() {
+  const tile = dialog.dataset.kind === "quiz" ? state.play.selected : null;
   if (dialog.dataset.kind === "quiz" && !quizCardOnTile()) {
     state.play.selected = null;
     state.play.revealed = false;
     saveParty();
   }
   hideDialog();
+  // Il focus torna alla casella che ha aperto la finestra.
+  if (tile !== null) app.querySelector(`[data-action="quiz-open"][data-index="${tile}"]`)?.focus();
 }
 
 function showMimeCard() {
@@ -645,6 +680,7 @@ function updateClock() {
   const formatted = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   if (output.textContent !== formatted) output.textContent = formatted;
   document.getElementById("timer-bar").value = seconds;
+  output.parentElement.classList.toggle("urgent", step === "active" && seconds <= 10);
   if (step === "active" && state.play.reveal) {
     if (now >= state.play.reveal.until) finishFlashReveal(seconds);
     return;
@@ -736,15 +772,6 @@ function quizCardOnTile() {
   return state.play.cards?.find((card) => card?.tile === state.play.selected);
 }
 
-function quizCardStatus() {
-  return `<ul class="quiz-card-status" role="list" aria-label="${t("Disponibilità delle carte")}">
-    ${state.teams.map((_, team) => {
-      const used = state.play.cards?.[team];
-      return `<li role="listitem">${teamChip(team)}<span>${used ? `${tr("Carta usata", "Card used")} · ${t(quizEffects[used.effect].name)}` : t("Carta disponibile")}</span></li>`;
-    }).join("")}
-  </ul>`;
-}
-
 function quizCardOptions(type) {
   const turn = teamOnTurn();
   const options = Object.entries(quizEffects).filter(([, effect]) => effect.type === type);
@@ -811,9 +838,11 @@ function showQuizCard(index, picker) {
   saveParty();
   dialog.dataset.picker = picker ?? "";
   openDialog("quiz", `
-    <p class="kicker quiz-clue-category">${esc(clue.category)} · ${clue.value} ${points}</p>
+    <div class="quiz-clue-head">
+      <p class="kicker quiz-clue-category">${esc(clue.category)} · ${clue.value} ${points}</p>
+      <div>${turnText}<button type="button" class="icon-button" data-action="close-dialog" aria-label="${t("Torna al tabellone")}">${ico("close")}</button></div>
+    </div>
     <div class="quiz-clue-content">
-      ${turnText}
       <h2 id="card-title">${shown ? esc(clue.question) : picker === "bonus" ? t("Gioca un bonus") : picker === "malus" ? t("Chi gioca il malus?") : t("Prima della domanda")}</h2>
       ${cardText}
       ${shown && clue.photo ? `<figure class="quiz-photo">
@@ -922,6 +951,7 @@ function moveRound(action, index) {
 
   teamDraft = readTeamFields(app.querySelector("#team-form"));
   [roundOrderDraft[position], roundOrderDraft[target]] = [roundOrderDraft[target], roundOrderDraft[position]];
+  movedRound = { index, dir: action === "round-up" ? 1 : -1 };
   render();
   const buttons = [...app.querySelectorAll(`.round-order-actions button[data-index="${index}"]:not(:disabled)`)];
   (buttons.find((button) => button.dataset.action === action) ?? buttons[0])?.focus({ preventScroll: true });
@@ -978,6 +1008,11 @@ const actionHandlers = {
 document.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-action]");
   if (button && !button.disabled) {
+    if (!dialog.open) {
+      const box = button.getBoundingClientRect();
+      dialog.style.setProperty("--ox", `${box.left + box.width / 2}px`);
+      dialog.style.setProperty("--oy", `${box.top + box.height / 2}px`);
+    }
     const { action, index } = button.dataset;
     actionHandlers[action](action, Number(index));
   }

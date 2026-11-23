@@ -115,10 +115,125 @@
     },
   };
 
+  function currentTheme() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--sound-theme").trim();
+  }
+
   function play(name, ...args) {
     if (muted || !ctx || ctx.state !== "running") return;
-    const key = getComputedStyle(document.documentElement).getPropertyValue("--sound-theme").trim();
-    (themes[key] || themes.studio)[name]?.(...args);
+    (themes[currentTheme()] || themes.studio)[name]?.(...args);
+  }
+
+  // ---------- Tappeti musicali di sottofondo ----------
+  // Loop sintetizzati (nessun file) che accompagnano alcune fasi: tensione mentre scorre il timer,
+  // festa nella classifica finale, attesa nelle introduzioni. Passano da un sub-mix che sfuma dolce,
+  // così restano sotto gli effetti e sotto la voce di chi conduce. Il Karaoke non ne ha: suona il video.
+
+  const BED_ON = 1.3; // livello del sub-mix quando un tappeto è attivo (gli effetti restano più forti)
+  let bedGain = null;
+  let bedName = null;
+  let bedTimer = null;
+  let bedNext = 0;
+
+  function bedMix() {
+    if (!bedGain) {
+      bedGain = ctx.createGain();
+      bedGain.gain.value = 0;
+      bedGain.connect(master);
+    }
+    return bedGain;
+  }
+
+  // Una nota del tappeto: come tone(), ma instradata nel sub-mix e con attacco morbido.
+  function bedTone(freq, start, length, { type = "sine", gain = 0.1, to = null } = {}) {
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    if (to) osc.frequency.exponentialRampToValueAtTime(to, start + length);
+    amp.gain.setValueAtTime(0.0001, start);
+    amp.gain.exponentialRampToValueAtTime(gain, start + Math.min(0.06, length / 3));
+    amp.gain.exponentialRampToValueAtTime(0.0001, start + length);
+    osc.connect(amp).connect(bedMix());
+    osc.start(start);
+    osc.stop(start + length + 0.05);
+  }
+
+  // Ogni funzione programma una battuta a partire da `t` e restituisce la sua durata (in secondi).
+  const beds = {
+    studio: {
+      tense(t) {
+        const b = 0.42;
+        [-24, -24, -22, -24].forEach((n, i) => bedTone(note(n), t + i * b, 0.32, { type: "sawtooth", gain: 0.17 }));
+        bedTone(note(-12), t, b * 4, { type: "sawtooth", gain: 0.05 });
+        bedTone(note(-13), t, b * 4, { type: "sawtooth", gain: 0.04 }); // seconda minore: dissonanza tesa
+        return b * 4;
+      },
+      celebrate(t) {
+        const b = 0.225;
+        [-12, -5, -7, -5].forEach((n, i) => bedTone(note(n), t + i * 2 * b, b * 2, { type: "triangle", gain: 0.12 }));
+        [12, 16, 19, 24, 28, 24, 19, 16].forEach((n, i) => bedTone(note(n), t + i * b, b * 0.9, { type: "triangle", gain: 0.1 }));
+        return b * 8;
+      },
+      anticipate(t) {
+        [0, 2, 7].forEach((n) => bedTone(note(n), t, 2.4, { type: "sine", gain: 0.06 })); // accordo sospeso
+        bedTone(note(19), t, 1.2, { type: "sine", gain: 0.04 });
+        return 2.4;
+      },
+    },
+    varieta: {
+      tense(t) {
+        const b = 0.44;
+        [-24, -17, -20].forEach((n, i) => bedTone(note(n), t + i * b, 0.34, { type: "triangle", gain: 0.16 })); // um-pa-pa
+        bedTone(note(-12), t, b * 3, { type: "triangle", gain: 0.05 });
+        bedTone(note(-11), t, b * 3, { type: "triangle", gain: 0.04 });
+        return b * 3;
+      },
+      celebrate(t) {
+        const b = 0.2;
+        [-12, -5, -12, -5].forEach((n, i) => bedTone(note(n), t + i * 2 * b, b * 2, { type: "triangle", gain: 0.12 }));
+        [12, 16, 19, 24, 19, 16, 19, 24].forEach((n, i) => bedTone(note(n), t + i * b, b * 0.9, { type: "triangle", gain: 0.1 }));
+        return b * 8;
+      },
+      anticipate(t) {
+        [0, 4, 7].forEach((n) => bedTone(note(n), t, 2.2, { type: "triangle", gain: 0.05 }));
+        bedTone(note(16), t, 1.1, { type: "triangle", gain: 0.035 });
+        return 2.2;
+      },
+    },
+  };
+
+  function bedTick() {
+    if (!ctx || ctx.state !== "running" || !bedName) return;
+    const def = (beds[currentTheme()] || beds.studio)[bedName];
+    if (!def) return;
+    const ahead = ctx.currentTime + 0.3;
+    if (bedNext < ctx.currentTime) bedNext = ctx.currentTime + 0.05;
+    while (bedNext < ahead) bedNext += def(bedNext);
+  }
+
+  function startBed(name) {
+    if (!ctx || ctx.state !== "running" || muted || bedName === name) return;
+    bedName = name;
+    bedNext = 0;
+    bedMix().gain.cancelScheduledValues(ctx.currentTime);
+    bedMix().gain.setTargetAtTime(BED_ON, ctx.currentTime, 0.25); // entra sfumando
+    bedTick();
+    clearInterval(bedTimer);
+    bedTimer = setInterval(bedTick, 120);
+  }
+
+  function stopBed() {
+    if (!bedName) return;
+    bedName = null;
+    clearInterval(bedTimer);
+    bedTimer = null;
+    if (bedGain) bedGain.gain.setTargetAtTime(0, ctx.currentTime, 0.2); // esce sfumando; le note già programmate tacciono
+  }
+
+  function setBed(name) {
+    if (!name) stopBed();
+    else startBed(name);
   }
 
   // ---------- Una sola finestra suona ----------
@@ -153,10 +268,19 @@
     window.addEventListener("pagehide", () => {
       try { localStorage.removeItem(screenKey); } catch { /* niente da togliere */ }
     });
+    // Il tappeto musicale sullo schermo segue le indicazioni ripetute della conduzione; se smettono
+    // di arrivare (conduzione chiusa o cambio finestra che suona) il cane da guardia lo spegne.
+    let wantBed = null;
+    let bedAt = 0;
+    setInterval(() => {
+      if (Date.now() - bedAt > 1600) wantBed = null;
+      setBed(wantBed);
+    }, 400);
     window.addEventListener("storage", (event) => {
       if (event.key !== eventKey || !event.newValue) return;
       let sound;
       try { sound = JSON.parse(event.newValue); } catch { return; }
+      if ("bg" in (sound || {})) { wantBed = sound.bg || null; bedAt = Date.now(); setBed(wantBed); return; }
       if (typeof sound?.name === "string" && Array.isArray(sound.args) && Date.now() - sound.at < 1500) play(sound.name, ...sound.args);
     });
     return; // lo schermo giocatori esegue soltanto: cosa suonare lo decide la finestra di conduzione
@@ -180,6 +304,7 @@
       muted = !muted;
       try { localStorage.setItem(storageKey, muted ? "off" : "on"); } catch { /* vale solo per questa sessione */ }
       if (master) master.gain.setTargetAtTime(muted ? 0 : 0.3, ctx.currentTime, 0.02);
+      updateBed();
       paint();
       emit("correct");
     });
@@ -194,6 +319,50 @@
   let lastTimer = "";
   let answerShown = false;
   let verdictShown = false;
+
+  // ---------- Quale tappeto musicale serve adesso ----------
+  // La conduzione decide dalla propria pagina: festa alla classifica finale, tensione mentre il timer
+  // scorre davvero (si ferma in pausa, a tempo scaduto e nella correzione), attesa sulle introduzioni.
+  let bgTimerText = "";
+  let bgTimerAt = 0;
+  let relaying = false;
+  let relayedBed;
+  let relayedAt = 0;
+
+  function desiredBed() {
+    if (muted) return null;
+    if (document.querySelector(".final-table")) return "celebrate";
+    const timer = document.getElementById("timer-display");
+    const text = timer ? timer.textContent.trim() : "";
+    if (text !== bgTimerText) { bgTimerText = text; bgTimerAt = Date.now(); }
+    if (text && text !== "0:00" && Date.now() - bgTimerAt < 1600) return "tense";
+    if (document.querySelector(".intro-stage")) return "anticipate";
+    return null;
+  }
+
+  function relayBed(name) {
+    // Solo al cambio o come battito ogni ~700 ms: il DOM muta spessissimo, la memoria locale no.
+    const value = name || null;
+    if (value === relayedBed && Date.now() - relayedAt < 700) return;
+    relayedBed = value;
+    relayedAt = Date.now();
+    try { localStorage.setItem(eventKey, JSON.stringify({ bg: value, at: relayedAt, id: Math.random() })); } catch { /* suona questa finestra */ }
+  }
+
+  // Suona dove escono gli effetti: sullo schermo giocatori se è pronto (gli ripeto lo stato, così il
+  // suo cane da guardia non lo spegne), altrimenti qui. Così non si sente mai doppio.
+  function updateBed() {
+    if (!ctx || ctx.state !== "running") return;
+    const want = desiredBed();
+    if (!muted && screenReady()) {
+      stopBed();
+      relayBed(want);
+      relaying = true;
+    } else {
+      if (relaying) { relayBed(null); relaying = false; }
+      setBed(muted ? null : want);
+    }
+  }
 
   function check() {
     const sigla = document.querySelector(".view-enter .sigla");
@@ -218,6 +387,8 @@
     const verdict = document.querySelector(".flash-correct, .flash-incorrect");
     if (verdict && !verdictShown) emit(verdict.classList.contains("flash-correct") ? "correct" : "wrong");
     verdictShown = Boolean(verdict);
+
+    updateBed();
   }
 
   new MutationObserver(check).observe(document.body, {
@@ -227,6 +398,8 @@
     attributes: true,
     attributeFilter: ["class", "hidden", "open"],
   });
+  // Rivaluta a intervalli: il timer che si ferma e lo schermo che si apre o chiude non cambiano il DOM.
+  setInterval(updateBed, 500);
 
   const positive = new Set(["quiz-correct", "mime-correct", "warmup-correct", "list-answer", "song-score"]);
   const negative = new Set(["quiz-wrong", "warmup-wrong"]);

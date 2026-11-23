@@ -509,6 +509,8 @@ span.quiz-tile { display: grid; place-items: center; }
 .list-answers { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.375rem), 1fr)); gap: var(--sp-2); align-content: center; }
 .list-answers .button { min-height: 4rem; font-size: var(--fs-4); background: var(--tile-bg); border-color: var(--tile-line); color: var(--tile-text); text-shadow: var(--tile-text-shadow); box-shadow: var(--tile-inset); }
 /* Disabilitata con la spunta: risposta già trovata. Disabilitata senza: il turno non è ancora partito. */
+.list-answers .button:disabled:not(:has(.ico)) { opacity: 0.45; box-shadow: none; text-shadow: none; }
+.view-enter .list-answers .button:disabled:not(:has(.ico)) { animation: none; } /* si accendono quando parte il turno */
 .list-answers .button:disabled:has(.ico) { opacity: 1; background: var(--pos); border-color: var(--pos-line); color: var(--on-pos); box-shadow: none; text-shadow: none; }
 .view-enter .list-answers .button { animation: tile-in var(--dur-3) var(--ease-out) calc(var(--stagger) * var(--i, 0) * 0.5) both; }
 .list-play { display: grid; justify-items: center; gap: var(--sp-2); text-align: center; }
@@ -642,6 +644,10 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .quiz-clue-content h2 { max-width: 22ch; font-size: var(--fs-7); line-height: 1; text-transform: none; text-shadow: var(--display-shadow); animation: rise-in var(--dur-3) var(--ease-out) var(--dur-1) both; }
 .quiz-clue-content:has(.quiz-photo) h2 { font-size: var(--fs-6); max-width: 32ch; }
 .quiz-clue-content .presenter-answer { font-size: var(--fs-5); }
+/* Con la risposta in pagina la domanda si stringe: chi conduce deve vederle entrambe senza scorrere. */
+.quiz-clue-content:has(.presenter-answer) h2 { max-width: 32ch; font-size: min(var(--fs-6), 6.5dvh); }
+.quiz-clue-content:has(.presenter-answer):has(.quiz-photo) h2 { font-size: min(var(--fs-5), 5dvh); }
+.quiz-clue-content:has(.presenter-answer) { gap: var(--sp-3); }
 #card-dialog:has([data-action="quiz-correct"]) .presenter-answer, .play-stage .player-answer { background: var(--primary); color: var(--on-primary); border: var(--bw-strong) solid var(--primary-hi); box-shadow: var(--glow-primary); transform-origin: 50% 0; animation: answer-in var(--dur-show) var(--ease-out) both; }
 #card-dialog:has([data-action="quiz-correct"]) .presenter-answer { padding: var(--sp-3) var(--sp-7) var(--sp-4); font: var(--display-weight) var(--fs-6)/1.05 var(--font-display); text-transform: var(--display-case); }
 #card-dialog:has([data-action="quiz-correct"]) .presenter-answer strong, .player-answer .prompt-note { color: var(--on-primary); font-family: var(--font-body); }

@@ -93,6 +93,9 @@ function readDisplay() {
     void document.body.offsetWidth;
     document.body.classList.add(scene !== shownScene ? "view-enter" : "card-enter");
     shownScene = scene;
+    const [ox, oy] = projection?.origin ?? [0.5, 0.5];
+    content.style.setProperty("--ox", `${ox * 100}%`);
+    content.style.setProperty("--oy", `${oy * 100}%`);
     content.classList.toggle("intro-stage", !projection || ["", "setup", "welcome", "intro"].includes(phase));
     content.classList.toggle("results-stage", ["results", "final"].includes(phase));
     content.innerHTML = markup;
@@ -104,7 +107,12 @@ function readDisplay() {
     showingRound = playing;
   }
   if (standings !== shownScores) {
+    // Solo presentazione: il punteggio che cambia fa un salto, come nella finestra di chi conduce.
+    const before = Array.from(scores.querySelectorAll(".total"), (total) => total.textContent);
     scores.innerHTML = standings;
+    scores.querySelectorAll(".total").forEach((total, team) => {
+      if (before[team] !== undefined && before[team] !== total.textContent) total.closest("li").classList.add("bump");
+    });
     shownScores = standings;
   }
   scores.hidden = !standings;

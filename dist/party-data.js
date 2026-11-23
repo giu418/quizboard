@@ -1,13 +1,14 @@
 const partyDebug = new URLSearchParams(window.location.search).get("debug") === "1";
 const partyStorage = partyDebug ? "quizboard-party-debug-v1" : "quizboard-party-v1";
+const listAnswerStorage = `${partyStorage}-list-answer`;
 const partyVersion = 2;
 const partyRounds = [
-  { id: "mime", title: "Cinema muto", short: "Mima", icon: "✦", format: "45 secondi", summary: "Mima il titolo di un film.", rules: "A turno, un giocatore guarda il titolo in privato e lo mima senza parlare. La squadra ha 45 secondi per indovinare più film possibile. Ogni titolo indovinato vale un punto.", seconds: 45, hand: 8 },
+  { id: "mime", title: "Cinema muto", short: "Mima", icon: "✦", format: "45 secondi", summary: "Mima il titolo di un film.", rules: "A turno, un giocatore guarda il titolo in privato e lo mima senza parlare. La squadra ha 45 secondi per indovinare più film possibile. Ogni titolo indovinato vale un punto.", seconds: 45, hand: 8, suspended: true },
   { id: "quiz", title: "Tabellone quiz", short: "Quiz", icon: "▦", format: "1–5 punti", summary: "Gioca tutte le caselle del tabellone.", rules: "Le squadre scelgono a turno una casella da 1 a 5 punti, fino a esaurire il tabellone. Una risposta esatta aggiunge il valore, una sbagliata lo sottrae." },
-  { id: "song", title: "La parola mancante", short: "Musica", icon: "♫", suspended: true },
+  { id: "song", title: "Karaoke", short: "Karaoke", icon: "♫", format: "Video MP4", summary: "Riproduci i video delle canzoni.", rules: "Carica i video MP4 e scegli la squadra che gioca. Dopo ogni canzone, i giudici assegnano da 0 a 5 punti." },
   { id: "flash", title: "Vero o falso lampo", short: "Lampo", icon: "ϟ", format: "60 secondi", summary: "Rispondi prima che scada il tempo.", rules: "Ogni squadra ha 60 secondi. Una risposta corretta vale +1, una sbagliata −1. Si può passare senza perdere punti.", seconds: 60, hand: 16 },
-  { id: "proverbs", title: "Proverbi al volo", short: "Proverbi", icon: "❞", format: "60 secondi", summary: "Completa otto proverbi di fila.", rules: "La squadra ha 60 secondi per completare otto proverbi di fila. Al primo errore ricomincia dal primo proverbio con il tempo che resta. L’intera sequenza vale 8 punti.", seconds: 60, hand: 8 },
-  { id: "list", title: "La sfida delle liste", short: "Liste", icon: "☷", format: "20 risposte", summary: "Trova risposte alla categoria.", rules: "Le squadre si alternano e nominano una risposta valida non ancora data oppure passano. Ogni risposta valida vale un punto. La manche termina quando tutte le risposte sono state trovate o tutte le squadre passano consecutivamente." },
+  { id: "proverbs", title: "Riscaldamento", short: "Riscaldamento", icon: "❞", format: "60 secondi", summary: "Completa una sequenza di proverbi o tabelline.", rules: "Scegli una categoria per tutte le squadre. Ogni squadra ha 60 secondi per dare otto risposte corrette di fila. A ogni errore riparte dalla prima domanda con il tempo che resta. Chi completa la sequenza guadagna 2 punti in classifica, altrimenti 0.", seconds: 60, hand: 8, completionPoints: 2 },
+  { id: "list", title: "La sfida delle liste", short: "Liste", icon: "☷", format: "20 risposte", summary: "Trova risposte alla categoria.", rules: "A turno, ogni squadra dà una risposta entro il tempo impostato. Una risposta valida e nuova vale un punto e fa passare il turno. Alla scadenza si passa automaticamente. La manche termina quando tutte le risposte sono state trovate o tutte le squadre passano consecutivamente." },
 ];
 
 const listCategories = [
@@ -31,13 +32,12 @@ function activePartyTeam(party) {
 function partyHand(round, teams) {
   if (round.id === "mime") return Math.min(round.hand, Math.floor(mimeCards.length / teams));
   if (round.id === "flash") return Math.min(round.hand, 2 * Math.floor(Math.min(flashTrue.length, flashFalse.length) / teams));
-  if (round.id === "proverbs") return Math.min(round.hand, Math.floor(proverbCards.length / teams));
   return round.hand;
 }
 
-function timedPartyCard(party, bank) {
+function timedPartyCard(party, bank, drawKey = partyRounds[party.round].id) {
   const round = partyRounds[party.round];
-  return bank[party.draw[round.id][party.play.turn * partyHand(round, party.teams.length) + party.play.card]];
+  return bank[party.draw[drawKey][party.play.turn * partyHand(round, party.teams.length) + party.play.card]];
 }
 
 const mimeCards = [
@@ -152,6 +152,20 @@ const proverbCards = [
   ["La notte…", "porta consiglio"], ["Patti chiari…", "amicizia lunga"],
   ["Campa cavallo…", "che l’erba cresce"], ["Chi disprezza…", "compra"],
 ];
+
+const multiplicationFactors = [2, 3, 4, 5, 6, 7, 8, 9];
+const multiplicationCards = multiplicationFactors.flatMap((left) =>
+  multiplicationFactors.map((right) => [`${left} × ${right} = …`, String(left * right)])
+);
+const warmupCategories = [
+  { label: "Proverbi", drawKey: "proverbs", it: proverbCards, en: englishProverbCards },
+  { label: "Tabelline", drawKey: "multiplication", it: multiplicationCards, en: multiplicationCards },
+];
+
+function warmupCard(party) {
+  const category = warmupCategories[party.play.category ?? 0];
+  return timedPartyCard(party, category[language], category.drawKey);
+}
 
 // Adapted from the Italian Mintaka train split (CC BY 4.0). Source IDs follow each clue.
 const quizAlternates = [

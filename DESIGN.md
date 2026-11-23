@@ -1,6 +1,6 @@
 # DESIGN.md — redesign di Quizboard
 
-Stato: **Fasi 3–5 completate su questo branch**; resta la Fase 6 (verifica finale e pulizia) dopo i feedback.
+Stato: **Fasi 3–5 completate su questo branch**; resta la Fase 6 (verifica finale e pulizia) dopo i feedback. Il 23/11/2026 il branch è stato allineato a `main` (`54f4d44`, conduzione su due schermi): vedi «Allineamento a main» in fondo.
 
 Il redesign segue **due filoni paralleli**, uno per branch: `prima-serata` e `varieta`. Markup, `ui.css` e script sono identici; cambia solo `dist/theme.css` (token, font e scenografia) e il `theme-color` delle pagine.
 
@@ -155,6 +155,14 @@ In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`,
 - [x] D5 · Conferma «Nuova partita»
 - [x] 14 · Scheda del giudice
 - [x] Modalità debug (barra «Vai a…», roadmap, elenco manche)
+- [x] 15 · Schermo giocatori (`schermo.html`): attesa, benvenuto, sigla, turno a tempo, tabellone, domanda (anche con foto), risposta, liste, karaoke (squadra, video), risultati, classifica finale
+- [x] 16 · Karaoke: senza video, con video, voto 0–5, risultati senza voti
+- [x] 17 · Riscaldamento: scelta Proverbi/Tabelline, risposta riservata a chi conduce
+- [x] 18 · Sfida delle liste a tempo: si prepara, turno attivo, tempo per risposta nella configurazione
+- [x] 19 · Correzione dell'ultimo inserimento: pulsante nel HUD e nei risultati, avviso «Timer in pausa»
+- [x] 20 · Riordino delle manche con maniglia (trascinamento e frecce)
+- [x] 21 · «Il gioco è aperto in un'altra finestra»
+- [x] Scheda del giudice: elenco delle risposte per la Sfida delle liste
 - [x] Animazioni (Fase 5)
 - [ ] Verifica finale (Fase 6): tastiera completa, pulizia finale, resoconto
 
@@ -178,3 +186,15 @@ In fondo a `theme.css` c'è la scenografia propria del tema: `.sigla`, `.bulbs`,
 - **Ogni scena di gioco sta in una schermata** (verificato a 1024×768, 1366×768, 1600×900, 1920×950, 1920×1080, 2560×1440, 3840×2160). Solo la preparazione della serata può scorrere: il pulsante «Inizia la partita» resta agganciato in basso.
 - **Da 2 a 6 squadre** (richiesta dell'utente: ne sono previste 5). Il markup scrive `--n` su podi e classifiche e gli stili si regolano da lì. Colori `--team-4` e `--team-5` aggiunti.
 - **Modifica di logica, richiesta**: `maxTeams` passa da 4 a 6 e `partyHand()` in `party-data.js` accorcia la mano quando i mazzi non bastano (5 squadre: 7 carte di mimo e 14 domande lampo a testa; 6 squadre: 6 e 12). I proverbi restano 8. Oltre 6 squadre servono nuove carte.
+
+### Allineamento a main (23/11/2026)
+
+`main` è passato a `54f4d44` («conduzione su due schermi»): Karaoke, Riscaldamento con Proverbi o Tabelline, Liste a tempo, correzione dell'ultimo inserimento, schermo giocatori da proiettare (`schermo.html`, `player.js`, `presentation.js`), riordino con maniglia, lingua e «Solo quiz» nascosti. Il merge tiene **tutta la logica, i dati e i testi di main** e sopra rimette solo la presentazione del redesign.
+
+- **Chi guarda cosa è cambiato**: il pubblico guarda lo *schermo giocatori* sul proiettore, chi conduce guarda la finestra sul portatile. Lo schermo giocatori usa quindi gli stessi token e la stessa scenografia (sigla, podi, tessere, risposta che salta fuori) con caratteri più grandi e tutto al centro; non scorre mai (`100dvh`).
+- **Stili delle parti nuove**: tutti in `ui.css`, con i token di `theme.css`. `party.css` resta eliminato; le regole che main vi ha aggiunto sono state riscritte, non copiate.
+- **Modifiche agli script, solo di presentazione**: icone SVG al posto di ✓/✕ e della maniglia disegnata in CSS (`grip`, `screen` in `language.js`); classi squadra e `--i`/`--n` nel markup nuovo; chiave `scene` nella proiezione e classi `view-enter`/`card-enter`/`intro-stage`/`results-stage`/`urgent` in `player.js`, per far partire gli ingressi anche sul proiettore; `sound.js` segue i nuovi nomi delle azioni (`warmup-*`, `song-score`) e riconosce la risposta rivelata dal pulsante «Esatta».
+- **Podi anche sul proiettore**: lo schermo giocatori mostra i punti della manche come podi nell'ordine delle squadre (in main erano in ordine di punteggio) e, nel quiz, lo stato della carta che main mostrava in un elenco a parte.
+- **Risposta del quiz**: nella finestra di chi conduce è un riquadro tratteggiato «Risposta riservata»; diventa la targa oro quando viene rivelata. Sul proiettore la targa compare solo alla rivelazione.
+- **Unica differenza di logica rispetto a main**: resta il limite di 2–6 squadre chiesto il 22/11 (main ne prevede 2–4). Con 2–4 squadre regole, mazzi e numero di domande sono identici a main; `partyHand()` accorcia la mano solo con 5–6 squadre nel Vero o falso (14 e 12 domande invece di 16) e nel Cinema muto, che ora è in pausa. Riscaldamento, Liste, Karaoke e Tabellone non cambiano con nessun numero di squadre.
+- **Verifica**: flusso completo con 5 squadre su finestra di conduzione (1280, 768, 360 px) e schermo giocatori (1920×1080), scheda del giudice e finestra «aperta altrove»; nessun errore in console.

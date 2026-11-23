@@ -165,7 +165,7 @@
     }
     if (text) lastTimer = text;
 
-    const answer = Boolean(document.querySelector("dialog[open] .quiz-clue-content .prompt-card, dialog[open] #revealed:not([hidden])"));
+    const answer = Boolean(document.querySelector('dialog[open] [data-action="quiz-correct"], dialog[open] #revealed:not([hidden])'));
     if (answer && !answerShown) play("reveal");
     answerShown = answer;
 
@@ -182,8 +182,8 @@
     attributeFilter: ["class", "hidden", "open"],
   });
 
-  const positive = new Set(["quiz-correct", "mime-correct", "proverb-correct", "list-answer"]);
-  const negative = new Set(["quiz-wrong", "proverb-wrong"]);
+  const positive = new Set(["quiz-correct", "mime-correct", "warmup-correct", "list-answer", "song-score"]);
+  const negative = new Set(["quiz-wrong", "warmup-wrong"]);
   document.addEventListener("click", (event) => {
     const button = event.target.closest("button");
     if (!button || button.disabled) return;

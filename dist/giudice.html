@@ -8,13 +8,13 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title data-i18n>Scheda del giudice · Quizboard</title>
-  <link rel="stylesheet" href="ui.css?v=fluido">
-  <link rel="stylesheet" href="theme.css?v=fluido">
-  <script src="english-text.js?v=squadre" defer></script>
+  <link rel="stylesheet" href="ui.css?v=due-schermi">
+  <link rel="stylesheet" href="theme.css?v=due-schermi">
+  <script src="english-text.js?v=due-schermi" defer></script>
   <script src="english-content.js" defer></script>
-  <script src="language.js" defer></script>
-  <script src="party-data.js?v=squadre" defer></script>
-  <script src="judge.js?v=squadre" defer></script>
+  <script src="language.js?v=due-schermi" defer></script>
+  <script src="party-data.js?v=due-schermi" defer></script>
+  <script src="judge.js?v=due-schermi" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -23,7 +23,7 @@
         <span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
         Quizboard
       </div>
-      <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English">EN</button>
+      <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English" hidden>EN</button>
     </div>
   </header>
   <main class="wrap">
@@ -38,9 +38,14 @@
       <p class="stage-copy" id="judge-status" role="status"></p>
       <div class="prompt-card" id="judge-card" hidden>
         <p class="prompt-note" id="judge-position"></p>
-        <p class="prompt" id="judge-proverb" aria-live="polite"></p>
+        <p class="prompt" id="judge-answer" aria-live="polite"></p>
       </div>
-      <p data-i18n class="stage-copy judge-note">Per segnare una risposta corretta o un errore, usa i pulsanti nella finestra di gioco.</p>
+      <p id="judge-note" data-i18n class="stage-copy judge-note" hidden>Per segnare una risposta corretta o un errore, usa i pulsanti nella finestra di gioco.</p>
+      <section id="judge-list" aria-labelledby="judge-list-title" hidden>
+        <h2 id="judge-list-title" class="panel-title list-category"></h2>
+        <p data-i18n class="panel-note">Seleziona la risposta data dalla squadra.</p>
+        <div id="judge-list-answers" class="list-answers"></div>
+      </section>
     </section>
   </main>
 </body>

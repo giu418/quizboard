@@ -5,16 +5,21 @@
    - sigla: quando una scena entra con la sigla (benvenuto e inizio manche);
    - timer: un battito al secondo negli ultimi 10 secondi e il segnale di tempo scaduto;
    - risposta: la rivelazione della risposta e l'esito (esatta o sbagliata).
-   Il timbro dipende dal tema: theme.css lo dichiara in --sound-theme. */
+   Il timbro dipende dal tema: theme.css lo dichiara in --sound-theme.
+   Con lo schermo giocatori aperto i suoni escono da lì e questa finestra tace,
+   così non si sentono mai doppi: vedi «Una sola finestra suona». */
 (() => {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
 
   const storageKey = "quizboard-sound";
+  const screenKey = "quizboard-sound-screen"; // lo schermo giocatori ci scrive l'ora finché può suonare
+  const eventKey = "quizboard-sound-event"; // la finestra di conduzione ci scrive il suono da far partire
+  const isScreen = document.body.classList.contains("player-display");
   let ctx = null;
   let master = null;
   let muted = false;
-  try { muted = localStorage.getItem(storageKey) === "off"; } catch { /* senza memoria locale i suoni restano accesi */ }
+  try { muted = !isScreen && localStorage.getItem(storageKey) === "off"; } catch { /* senza memoria locale i suoni restano accesi */ }
 
   function unlock() {
     if (!ctx) {
@@ -113,7 +118,48 @@
   function play(name, ...args) {
     if (muted || !ctx || ctx.state !== "running") return;
     const key = getComputedStyle(document.documentElement).getPropertyValue("--sound-theme").trim();
-    (themes[key] || themes.studio)[name](...args);
+    (themes[key] || themes.studio)[name]?.(...args);
+  }
+
+  // ---------- Una sola finestra suona ----------
+  // Lo schermo giocatori, dopo il primo tocco o tasto che sblocca l'audio, segnala ogni secondo
+  // di essere pronto. Finché il segnale è fresco, la finestra di conduzione non suona: gli passa
+  // il nome del suono. Se lo schermo è chiuso o non ancora sbloccato, suona la conduzione.
+
+  function screenReady() {
+    try { return Date.now() - Number(localStorage.getItem(screenKey)) < 2500; } catch { return false; }
+  }
+
+  function emit(name, ...args) {
+    if (muted) return;
+    if (screenReady()) {
+      try {
+        localStorage.setItem(eventKey, JSON.stringify({ name, args, at: Date.now(), id: Math.random() }));
+        return;
+      } catch { /* senza memoria locale suona questa finestra */ }
+    }
+    play(name, ...args);
+  }
+
+  if (isScreen) {
+    const signal = () => {
+      try {
+        if (ctx?.state === "running") localStorage.setItem(screenKey, String(Date.now()));
+      } catch { /* senza memoria locale suona la finestra di conduzione */ }
+    };
+    setInterval(signal, 1000);
+    document.addEventListener("pointerup", () => setTimeout(signal, 100), true);
+    document.addEventListener("keyup", () => setTimeout(signal, 100), true);
+    window.addEventListener("pagehide", () => {
+      try { localStorage.removeItem(screenKey); } catch { /* niente da togliere */ }
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key !== eventKey || !event.newValue) return;
+      let sound;
+      try { sound = JSON.parse(event.newValue); } catch { return; }
+      if (typeof sound?.name === "string" && Array.isArray(sound.args) && Date.now() - sound.at < 1500) play(sound.name, ...sound.args);
+    });
+    return; // lo schermo giocatori esegue soltanto: cosa suonare lo decide la finestra di conduzione
   }
 
   // ---------- Pulsante per silenziare, accanto a quello della lingua ----------
@@ -135,7 +181,7 @@
       try { localStorage.setItem(storageKey, muted ? "off" : "on"); } catch { /* vale solo per questa sessione */ }
       if (master) master.gain.setTargetAtTime(muted ? 0 : 0.3, ctx.currentTime, 0.02);
       paint();
-      if (!muted) play("correct");
+      emit("correct");
     });
     window.addEventListener("quizboard-language", paint);
     paint();
@@ -153,24 +199,24 @@
     const sigla = document.querySelector(".view-enter .sigla");
     if (sigla && !playedSiglas.has(sigla)) {
       playedSiglas.add(sigla);
-      play("sigla");
+      emit("sigla");
     }
 
     const timer = document.getElementById("timer-display");
     const text = timer ? timer.textContent.trim() : "";
     if (text && text !== lastTimer) {
       const seconds = Number(text.split(":")[1]);
-      if (lastTimer === "0:01" && text === "0:00") play("timeUp");
-      else if (timer.parentElement.classList.contains("urgent") && seconds > 0) play("tick", seconds <= 3);
+      if (lastTimer === "0:01" && text === "0:00") emit("timeUp");
+      else if (timer.parentElement.classList.contains("urgent") && seconds > 0) emit("tick", seconds <= 3);
     }
     if (text) lastTimer = text;
 
     const answer = Boolean(document.querySelector('dialog[open] [data-action="quiz-correct"], dialog[open] #revealed:not([hidden])'));
-    if (answer && !answerShown) play("reveal");
+    if (answer && !answerShown) emit("reveal");
     answerShown = answer;
 
     const verdict = document.querySelector(".flash-correct, .flash-incorrect");
-    if (verdict && !verdictShown) play(verdict.classList.contains("flash-correct") ? "correct" : "wrong");
+    if (verdict && !verdictShown) emit(verdict.classList.contains("flash-correct") ? "correct" : "wrong");
     verdictShown = Boolean(verdict);
   }
 
@@ -188,7 +234,7 @@
     const button = event.target.closest("button");
     if (!button || button.disabled) return;
     const action = button.dataset.action;
-    if (positive.has(action) || button.id === "correct") play("correct");
-    else if (negative.has(action) || button.id === "wrong") play("wrong");
+    if (positive.has(action) || button.id === "correct") emit("correct");
+    else if (negative.has(action) || button.id === "wrong") emit("wrong");
   }, true);
 })();

@@ -448,6 +448,9 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 :is(.play-hud, .player-scores) .standings li { border-bottom: 0; border-radius: var(--r-2) var(--r-2) 0 0; padding-bottom: var(--sp-3); }
 .standings small { grid-column: 1; color: var(--muted); font-size: var(--fs-1); }
 .standings .total { grid-column: 2; grid-row: 1 / span 2; }
+/* Risultati del riscaldamento: ogni podio è largo quanto il suo nome, così nome e punteggio non si sovrappongono; se non stanno su una riga vanno a capo. */
+:is(.results-view, .results-stage) .standings:not(.halftime-standings *) { display: flex; flex-wrap: wrap; justify-content: center; }
+:is(.results-view, .results-stage) .standings:not(.halftime-standings *) li { flex: 0 1 auto; min-width: min(100%, 11.25rem); max-width: 100%; grid-template-columns: minmax(0, auto) auto; justify-content: space-between; overflow-wrap: anywhere; }
 .total { font: var(--display-weight) var(--fs-5)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--primary); white-space: nowrap; }
 :is(.play-hud, .player-scores) .total { min-width: 3.4ch; padding: var(--sp-1) var(--sp-3); background: var(--sunk); border: var(--bw) solid var(--line-soft); border-radius: var(--r-1); text-align: center; font-size: calc(var(--fs-6) * var(--k, 1)); }
 .standings li.current { transform: translateY(-0.625rem); animation: halo 2.2s ease-in-out infinite alternate; }

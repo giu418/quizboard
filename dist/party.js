@@ -2,7 +2,7 @@ const app = document.getElementById("app");
 const dialog = document.getElementById("card-dialog");
 const live = document.getElementById("live");
 const minTeams = 2;
-const maxTeams = 6; // oltre sei squadre i mazzi di carte non bastano: vedi partyHand()
+const maxTeams = 6; // con 5 o 6 squadre la mano resta quella di main: vedi dealCards()
 const flashRevealDuration = 850;
 const listTurnDurations = [10, 15, 20, 30, 45, 60];
 const defaultListTurnSeconds = 15;
@@ -172,18 +172,25 @@ function indices(length, offset = 0) {
   return Array.from({ length }, (_, index) => index + offset);
 }
 
+// Come slice(offset, offset + count), ma se il mazzo finisce ricomincia da capo:
+// con 5 o 6 squadre ogni squadra riceve lo stesso numero di carte di main e le
+// ultime rivedono carte già uscite. Fino a 4 squadre il risultato è quello di main.
+function dealCards(cards, offset, count) {
+  return indices(count, offset).map((position) => cards[position % cards.length]);
+}
+
 function drawCards(teams) {
   const trueCards = shuffle(indices(flashTrue.length));
   const falseCards = shuffle(indices(flashFalse.length, flashTrue.length));
-  const halfFlashHand = partyHand(lookup.get("flash"), teams) / 2;
+  const halfFlashHand = lookup.get("flash").hand / 2;
   return {
     quiz: mintakaCategories.map(({ clues }) => clues.map(() => Math.floor(Math.random() * 2))),
-    mime: shuffle(indices(mimeCards.length)).slice(0, teams * partyHand(lookup.get("mime"), teams)),
+    mime: dealCards(shuffle(indices(mimeCards.length)), 0, teams * lookup.get("mime").hand),
     flash: indices(teams).flatMap((index) => {
       const offset = index * halfFlashHand;
       return shuffle([
-        ...trueCards.slice(offset, offset + halfFlashHand),
-        ...falseCards.slice(offset, offset + halfFlashHand),
+        ...dealCards(trueCards, offset, halfFlashHand),
+        ...dealCards(falseCards, offset, halfFlashHand),
       ]);
     }),
     proverbs: shuffle(indices(proverbCards.length)).slice(0, teams * partyRounds[warmupIndex].hand),
@@ -192,10 +199,6 @@ function drawCards(teams) {
 
 function roundNow() {
   return partyRounds[state.round];
-}
-
-function handNow() {
-  return partyHand(roundNow(), state.teams.length);
 }
 
 function teamOnTurn() {
@@ -442,7 +445,7 @@ function cardProgress(round, completed) {
   const label = round.id === "proverbs" ? t("Risposte corrette di fila") : t("Avanzamento del turno");
   return `<div class="cards-progress">
     <span>${label}</span>
-    <progress max="${handNow()}" value="${completed}" aria-label="${label}" aria-valuetext="${progressCount(completed, handNow())}"></progress>
+    <progress max="${round.hand}" value="${completed}" aria-label="${label}" aria-valuetext="${progressCount(completed, round.hand)}"></progress>
   </div>`;
 }
 
@@ -484,7 +487,7 @@ function timedView(forPlayers = false) {
   const card = timedCard();
   output.push(turnLine(t("Tocca a")));
   if (round.id === "mime") {
-    output.push(`<div class="prompt-card"><span class="prompt-note">${tr("Carta", "Card")} ${progressCount(play.card + 1, handNow())}</span><p class="prompt">${t("Titolo nascosto")}</p></div>
+    output.push(`<div class="prompt-card"><span class="prompt-note">${tr("Carta", "Card")} ${progressCount(play.card + 1, round.hand)}</span><p class="prompt">${t("Titolo nascosto")}</p></div>
       <div class="actions">
         <button type="button" class="button secondary" data-action="mime-card">${t("Mostra titolo in privato")}</button>
         <button type="button" class="button positive" data-action="mime-correct" ${play.seen ? "" : "disabled"}>${t("Indovinato +1")}</button>
@@ -997,7 +1000,7 @@ function scoreTimed(score, feedback) {
   rememberJudgment();
   state.scores[teamOnTurn()] += score;
   state.play.card += 1;
-  if (state.play.card === handNow()) {
+  if (state.play.card === roundNow().hand) {
     finishTurn("cards");
     return;
   }
@@ -1026,7 +1029,7 @@ function finishFlashReveal(seconds) {
   const play = state.play;
   delete play.reveal;
   play.card++;
-  if (play.card === handNow()) finishTurn("cards");
+  if (play.card === roundNow().hand) finishTurn("cards");
   else if (seconds === 0) finishTurn("time");
   else refresh();
 }

@@ -767,6 +767,8 @@ function publishDisplay() {
     tone: round?.id ?? "quiz",
     // Solo presentazione: lo schermo giocatori usa la scena per far partire gli ingressi.
     scene: lastViewKey,
+    // Punto dello schermo (in frazioni) da cui si è aperta la casella: la domanda esce da lì anche sul proiettore.
+    origin: [dialog.style.getPropertyValue("--ox"), dialog.style.getPropertyValue("--oy")].map((value, axis) => (parseFloat(value) || 0) / (axis ? innerHeight : innerWidth)),
     scores: playing ? standings(state.scores, state.play.step === "done" ? -1 : teamOnTurn(), true) : "",
   });
   if (projection === lastProjection) return;

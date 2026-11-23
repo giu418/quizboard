@@ -709,6 +709,19 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .player-stage .intro-stage .stage-header > .round-icon { display: inline-grid; }
 .player-stage .intro-stage > .stage-copy { font-size: var(--fs-4); }
 .view-enter .player-stage .intro-stage > h1 { animation: title-in var(--dur-show) var(--ease-out) both; }
+/* Le stesse entrate della finestra di chi conduce: qui le regole di .play-stage non devono coprirle. */
+.view-enter .player-stage .intro-stage .stage-header h1 { animation: title-in var(--dur-show) var(--ease-out) calc(var(--stagger) * 3) both; }
+.view-enter .player-stage .results-stage .stage-header h1 { animation: title-in var(--dur-show) var(--ease-out) both; }
+.view-enter .player-stage .play-content > .turn-box:only-child .turn-line { animation: title-in var(--dur-show) var(--ease-out) both; }
+/* La domanda esce dalla casella scelta, come la finestra a tutto schermo di chi conduce. */
+.card-enter .player-stage .play-content:has(> p.prompt-card):not(:has(> .player-answer)) { transform-origin: var(--ox, 50%) var(--oy, 50%); animation: clue-open var(--dur-3) var(--ease-out) both; }
+.card-enter .player-stage p.prompt-card { animation: none; }
+.card-enter .player-stage p.prompt-card .prompt { animation: rise-in var(--dur-3) var(--ease-out) var(--dur-1) both; }
+@keyframes clue-open { from { transform: scale(0.08); opacity: 0; } }
+/* Alla rivelazione si muove solo la risposta: domanda e foto restano ferme. */
+:is(.view-enter, .card-enter) .player-stage .player-answer { animation: answer-in var(--dur-show) var(--ease-out) both; }
+.card-enter .player-stage .play-content:has(> .player-answer) > p.prompt-card .prompt,
+.card-enter .player-stage .play-content:has(> .player-answer) .quiz-photo img { animation: none; }
 .view-enter .player-stage .intro-stage > .stage-copy { animation: rise-in var(--dur-3) var(--ease-out) calc(var(--stagger) * 6) both; }
 /* In gioco: tutto al centro e più grande. */
 .player-stage .turn-box, .player-stage .quiz-meta { align-self: center; }

@@ -421,6 +421,9 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 /* Correzione dell'ultimo inserimento: il timer è fermo finché non si registra di nuovo. */
 .correction-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); background: var(--sunk); border: var(--bw) solid var(--primary); border-radius: var(--r-1); font-weight: 600; animation: rise-in var(--dur-2) var(--ease-out) both; }
 .correction-notice .button { min-height: 2.75rem; font-size: var(--fs-2); }
+/* L'avviso occupa una riga: la scheda della domanda gliela cede, così la scena resta in una schermata. */
+.play-content:has(.correction-notice) { gap: var(--sp-2); }
+.play-content:has(.correction-notice) :is(.prompt-card, .flash-question) { padding-block: var(--sp-2); }
 /* Risposta che vede solo chi conduce. */
 .presenter-answer { align-self: center; display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); max-width: 100%; padding: var(--sp-2) var(--sp-5); background: var(--sunk); border: var(--bw) dashed var(--line); border-radius: var(--r-1); font-size: var(--fs-4); font-weight: 700; overflow-wrap: anywhere; }
 .presenter-answer strong { color: var(--muted); font-size: var(--fs-1); letter-spacing: var(--label-track); text-transform: uppercase; }
@@ -445,7 +448,7 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 :is(.play-hud, .player-scores) .standings li { border-bottom: 0; border-radius: var(--r-2) var(--r-2) 0 0; padding-bottom: var(--sp-3); }
 .standings small { grid-column: 1; color: var(--muted); font-size: var(--fs-1); }
 .standings .total { grid-column: 2; grid-row: 1 / span 2; }
-.total { font: var(--display-weight) var(--fs-5)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--primary); }
+.total { font: var(--display-weight) var(--fs-5)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--primary); white-space: nowrap; }
 :is(.play-hud, .player-scores) .total { min-width: 3.4ch; padding: var(--sp-1) var(--sp-3); background: var(--sunk); border: var(--bw) solid var(--line-soft); border-radius: var(--r-1); text-align: center; font-size: calc(var(--fs-6) * var(--k, 1)); }
 .standings li.current { transform: translateY(-0.625rem); animation: halo 2.2s ease-in-out infinite alternate; }
 @keyframes halo { from { box-shadow: 0 0 0 0.0625rem var(--team), 0 0 1rem color-mix(in srgb, var(--team) 30%, transparent); } to { box-shadow: 0 0 0 0.125rem var(--team), 0 0 3.375rem color-mix(in srgb, var(--team) 70%, transparent); } }
@@ -586,6 +589,17 @@ span.quiz-tile { display: grid; place-items: center; }
 .view-enter .results-view h1, .results-view.view-enter h1 { animation: title-in var(--dur-show) var(--ease-out) both; }
 .halftime-standings { margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: var(--bw) solid var(--line-soft); }
 .halftime-standings .panel-title { font-size: var(--fs-4); margin-bottom: var(--sp-3); }
+/* Risultati con la classifica a metà serata: tutto più raccolto, la classifica su una riga sola. */
+:root:has(.results-view) .credits { display: none; }
+.results-view:has(.halftime-standings) .stage { gap: var(--sp-2); padding-block: var(--sp-2); }
+.results-view:has(.halftime-standings) .result-table { --k: min(0.85, 2.4 / var(--n, 3)); }
+.results-view:has(.halftime-standings) .actions.spaced { margin-top: var(--sp-2); }
+.halftime-standings { margin-top: var(--sp-2); padding-top: var(--sp-2); }
+.halftime-standings .panel-title { margin-bottom: var(--sp-2); font-size: var(--fs-3); }
+.halftime-standings .standings { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--sp-2); }
+.halftime-standings .standings li { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 0; padding: var(--sp-1) var(--sp-2); text-align: center; }
+.halftime-standings .standings .total { grid-column: 1; grid-row: auto; font-size: var(--fs-4); }
+.halftime-standings .team-label { font-size: var(--fs-1); }
 
 /* ---------- Finestre ---------- */
 dialog {
@@ -662,10 +676,11 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 #card-dialog[data-look="quiz"] > .actions .button { min-height: 4.5rem; font-size: var(--fs-4); }
 #card-dialog[data-look="quiz"] > .actions .primary, #card-dialog[data-look="quiz"] > .actions .positive, #card-dialog[data-look="quiz"] > .actions .negative { flex: 1 1 14rem; max-width: 26rem; font-size: var(--fs-5); }
 #card-dialog[data-look="quiz"] > .actions .ghost { font-size: var(--fs-2); }
-.quiz-card-options { display: grid; gap: var(--sp-3); }
+.quiz-card-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: var(--sp-3); } /* fino a cinque avversari per il malus: affiancati, non in colonna */
 .quiz-card-option { display: grid; justify-items: center; gap: var(--sp-2); padding: var(--sp-3); border: var(--bw) solid var(--line); border-radius: var(--r-2); background: var(--sunk); animation: rise-in var(--dur-3) var(--ease-out) both; }
 .quiz-card-option .team-label { font-size: var(--fs-3); }
-.quiz-card-option .button { flex-direction: column; gap: var(--sp-1); min-height: 5rem; flex: 1 1 14rem; font-size: var(--fs-4); }
+.quiz-card-option .button { flex-direction: column; gap: var(--sp-1); min-height: 5rem; flex: 1 1 9rem; padding-inline: var(--sp-3); font-size: var(--fs-4); }
+#card-dialog[data-look="quiz"]:has(.quiz-card-options) .quiz-clue-content h2 { font-size: var(--fs-6); }
 
 /* ---------- Scheda del giudice ---------- */
 .judge-panel { width: min(47.5rem, 100%); margin: var(--sp-6) auto; display: grid; gap: var(--sp-4); }
@@ -789,6 +804,26 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .reset-dialog { text-align: center; }
 .reset-dialog p { margin-top: var(--sp-2); color: var(--muted); }
 
+/* ---------- Schermi larghi: la preparazione sta in una schermata, senza scorrere ---------- */
+@media (min-width: 60em) {
+  .hero { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr); gap: var(--sp-6); padding-block: var(--sp-3); }
+  .hero h1 { font-size: calc(var(--fs-8) * 0.78); }
+  .team-panel { padding-block: var(--sp-4); }
+  .team-panel > .panel-title { display: inline; margin-inline-end: var(--sp-3); }
+  .team-panel > .panel-note { display: inline; }
+  /* Squadre a sinistra, manche a destra, azione principale in basso a sinistra. */
+  .team-form { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; grid-template-areas: "teams rounds" "add rounds" ". rounds" "start settings"; gap: var(--sp-3) var(--sp-6); }
+  .team-fields { grid-area: teams; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2) var(--sp-3); }
+  .team-form > .ghost { grid-area: add; }
+  .round-order { grid-area: rounds; margin-top: 0; }
+  .round-order-list { margin-top: var(--sp-2); gap: var(--sp-1); }
+  .round-drop-before::before { top: -0.21875rem; }
+  .round-drop-after::after { bottom: -0.21875rem; }
+  .list-settings { grid-area: settings; align-self: end; }
+  .team-start { grid-area: start; position: static; align-self: end; margin-top: 0; }
+  body:has(.hero) .credits { padding-block: var(--sp-2); }
+}
+
 /* ---------- Schermi stretti ---------- */
 @media (max-width: 56.25em) {
   .game-layout { grid-template-columns: minmax(0, 1fr); }
@@ -817,6 +852,7 @@ dialog .quiz-clue-category { margin-bottom: 0; }
   .correction-notice .button { flex: 1 1 100%; }
   .standings, :is(.play-hud, .player-scores) .standings { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
   .standings li.current { transform: none; }
+  .halftime-standings .standings { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .standings li, :is(.play-hud, .player-scores) .standings li { padding: var(--sp-2); border-bottom: var(--bw) solid var(--line); border-radius: var(--r-1); }
   :is(.play-hud, .player-scores) .total, .total { font-size: var(--fs-4); min-width: 0; padding-inline: var(--sp-2); }
   .result-row .team-label, .final-table .winner .team-label { font-size: var(--fs-3); }

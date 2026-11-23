@@ -35,7 +35,7 @@ body::after {
 [hidden] { display: none !important; }
 p, h1, h2, h3, ul, ol, figure { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
-button, input { font: inherit; color: inherit; }
+button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; }
 a { color: inherit; text-underline-offset: 0.2em; }
@@ -147,7 +147,11 @@ h1, h2, h3, .display {
 .brand-icon i:last-child, .brand-mark i:last-child { opacity: 0.45; }
 .topbar nav, .header-actions { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; justify-content: flex-end; }
 .standalone { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--hit); padding-inline: var(--sp-2); font-weight: 700; text-decoration: none; color: var(--muted); }
-.topbar .reset, .header-actions .button { font-size: var(--fs-2); padding-inline: var(--sp-4); }
+.topbar .reset, .topbar .display-link, .header-actions .button { font-size: var(--fs-2); padding-inline: var(--sp-4); }
+.display-link:hover { color: var(--text); }
+/* La partita è aperta in un'altra finestra: una sola azione, riprendere il controllo. */
+.elsewhere { width: min(42rem, 100%); margin: auto; display: grid; justify-items: center; gap: var(--sp-3); text-align: center; animation: rise-in var(--dur-3) var(--ease-out) both; }
+.elsewhere .actions .primary { min-height: 4rem; font-size: var(--fs-4); }
 .credits { padding-block: var(--sp-3) var(--sp-4); color: var(--muted); font-size: var(--fs-1); }
 
 /* ---------- Pannelli ---------- */
@@ -218,8 +222,37 @@ input::placeholder { color: var(--faint); opacity: 1; }
 .round-choice { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; min-height: 2.75rem; font-weight: 600; font-size: var(--fs-3); cursor: pointer; }
 .round-choice strong { font-weight: 600; }
 .round-choice input { width: 1.375rem; height: 1.375rem; flex: none; accent-color: var(--primary); }
-.round-order-actions { display: flex; gap: var(--sp-1); }
-.round-order-actions .button { min-width: var(--hit); min-height: 2.75rem; padding-inline: var(--sp-2); font: 700 var(--fs-1)/1 var(--font-body); letter-spacing: 0; text-transform: none; }
+.round-order-list li { position: relative; }
+.round-handle.button { width: var(--hit); min-height: 2.75rem; padding: 0; border-color: transparent; color: var(--muted); cursor: grab; touch-action: none; }
+.round-handle.button:hover { color: var(--text); background: var(--surface-3); transform: none; }
+.round-order-list .round-dragging { opacity: 0.55; }
+.round-dragging .round-handle.button { cursor: grabbing; }
+.round-drop-before::before, .round-drop-after::after { content: ""; position: absolute; inset-inline: 0; height: 0.1875rem; border-radius: var(--r-pill); background: var(--primary); pointer-events: none; }
+.round-drop-before::before { top: -0.34375rem; }
+.round-drop-after::after { bottom: -0.34375rem; }
+/* Campi a scelta: tempo delle liste, squadra e video del karaoke. */
+.list-settings { display: grid; gap: var(--sp-2); }
+.list-settings label, .song-controls label { color: var(--muted); font-size: var(--fs-1); font-weight: 700; letter-spacing: var(--label-track); text-transform: uppercase; }
+select {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--hit);
+  padding: 0 var(--sp-7) 0 var(--sp-3);
+  border: var(--bw) solid var(--line-soft);
+  border-radius: var(--r-1);
+  background:
+    linear-gradient(45deg, transparent 50%, var(--primary) 50%) right 1.25rem center / 0.4375rem 0.4375rem no-repeat,
+    linear-gradient(135deg, var(--primary) 50%, transparent 50%) right 0.8125rem center / 0.4375rem 0.4375rem no-repeat,
+    var(--sunk);
+  font-size: var(--fs-3);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: border-color var(--dur-1), box-shadow var(--dur-1);
+}
+select:hover { border-color: var(--line); }
+select:focus-visible { outline-offset: 0; }
 /* L'azione principale resta sempre a portata anche se il modulo è più alto dello schermo. */
 .team-start { position: sticky; z-index: 1; inset-block-end: var(--sp-3); min-height: 4rem; margin-top: var(--sp-2); font-size: var(--fs-5); }
 .tone-mime { --tone: var(--tone-mime); }
@@ -280,6 +313,7 @@ input::placeholder { color: var(--faint); opacity: 1; }
 .intro-rules { display: grid; justify-items: center; gap: var(--sp-3); font-size: clamp(var(--fs-3), 2.2vw, 1.9rem); line-height: 1.35; text-wrap: pretty; }
 .intro-rules p { max-width: 46ch; }
 .intro-rules .intro-note { color: var(--muted); font-size: 0.8em; }
+.intro-actions { width: 100%; }
 .intro-actions .primary { min-width: min(100%, 20rem); min-height: 4.5rem; font-size: var(--fs-5); }
 .welcome-teams { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); }
 .welcome-teams .team-label { padding: var(--sp-2) var(--sp-5); background: var(--team); color: var(--on-team); border-radius: var(--r-btn); font: var(--display-weight) var(--fs-5)/1.1 var(--font-display); text-transform: var(--display-case); }
@@ -301,10 +335,14 @@ input::placeholder { color: var(--faint); opacity: 1; }
 /* ---------- Schermate di gioco ---------- */
 :root:has(.play-view) .credits,
 :root:has(.play-view) .topbar .brand,
-:root:has(.play-view) .topbar nav > :not(.language-toggle, .sound-toggle) { display: none; }
+:root:has(.play-view) .topbar nav > :not(.language-toggle, .sound-toggle, .display-link) { display: none; }
 :root:has(.play-view) .topbar, :root:has(.play-view) .topbar-inner, :root:has(.play-view) .topbar nav { display: contents; }
-:root:has(.play-view) .topbar .sound-toggle { position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-end: calc(var(--sp-3) + var(--hit) + var(--sp-2)); min-height: 2.75rem; background: var(--sunk); }
-:root:has(.play-view) .topbar .language-toggle { position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-end: var(--sp-3); min-height: 2.75rem; background: var(--sunk); font-size: var(--fs-1); }
+:root:has(.play-view) .topbar :is(.sound-toggle, .language-toggle, .display-link) { --slot: 0; position: fixed; z-index: 2; inset-block-end: var(--sp-3); inset-inline-end: calc(var(--sp-3) + var(--slot) * (var(--hit) + var(--sp-2))); width: var(--hit); min-width: 0; min-height: 2.75rem; padding: 0; background: var(--sunk); }
+:root:has(.play-view) .topbar .language-toggle { font-size: var(--fs-1); }
+:root:has(.play-view) .topbar .display-link { --slot: 1; }
+:root:has(.play-view) .topbar .display-link span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+:root:has(.play-view):has(.language-toggle:not([hidden])) .topbar .sound-toggle { --slot: 1; }
+:root:has(.play-view):has(.language-toggle:not([hidden])) .topbar .display-link { --slot: 2; }
 .play-view { width: 100%; }
 .play-stage { flex: 1; display: flex; flex-direction: column; gap: var(--sp-4); min-height: 100dvh; padding: var(--sp-4) var(--gutter) 0; }
 .play-content { flex: 1; display: flex; flex-direction: column; gap: var(--sp-3); min-height: 0; }
@@ -378,7 +416,14 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 /* Podi delle squadre */
 .play-hud { display: flex; align-items: flex-end; gap: var(--sp-3); flex-wrap: wrap; padding-inline-end: calc(var(--hit) * 2 + var(--sp-3) + var(--sp-2)); }
 .play-hud aside { flex: 1; min-width: 0; }
-.play-hud .reset { align-self: center; font-size: var(--fs-2); min-height: 2.75rem; padding-inline: var(--sp-3); }
+.play-hud .presenter-actions { flex-direction: column; align-self: center; gap: var(--sp-2); }
+.play-hud .presenter-actions .button { flex: none; max-width: none; min-height: 2.75rem; padding-inline: var(--sp-3); font-size: var(--fs-2); }
+/* Correzione dell'ultimo inserimento: il timer è fermo finché non si registra di nuovo. */
+.correction-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); background: var(--sunk); border: var(--bw) solid var(--primary); border-radius: var(--r-1); font-weight: 600; animation: rise-in var(--dur-2) var(--ease-out) both; }
+.correction-notice .button { min-height: 2.75rem; font-size: var(--fs-2); }
+/* Risposta che vede solo chi conduce. */
+.presenter-answer { align-self: center; display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); max-width: 100%; padding: var(--sp-2) var(--sp-5); background: var(--sunk); border: var(--bw) dashed var(--line); border-radius: var(--r-1); font-size: var(--fs-4); font-weight: 700; overflow-wrap: anywhere; }
+.presenter-answer strong { color: var(--muted); font-size: var(--fs-1); letter-spacing: var(--label-track); text-transform: uppercase; }
 .standings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.25rem), 1fr)); gap: var(--sp-3); align-items: end; }
 .standings li {
   display: grid;
@@ -394,14 +439,14 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 }
 /* I podi si dividono lo spazio in parti uguali: --n è il numero di squadre, scritto dal markup.
    Da quattro squadre in su il punteggio si stringe; da cinque il nome va sopra il punteggio. */
-.play-hud .standings { --k: min(1, 3.2 / var(--n, 3)); grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); }
-.play-hud .standings:has(li:nth-child(5)) li { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--sp-1); padding-inline: var(--sp-2); text-align: center; }
-.play-hud .standings:has(li:nth-child(5)) :is(.total, small) { grid-column: 1; grid-row: auto; }
-.play-hud .standings li { border-bottom: 0; border-radius: var(--r-2) var(--r-2) 0 0; padding-bottom: var(--sp-3); }
+:is(.play-hud, .player-scores) .standings { --k: min(1, 3.2 / var(--n, 3)); grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); }
+:is(.play-hud, .player-scores) .standings:has(li:nth-child(5)) li { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--sp-1); padding-inline: var(--sp-2); text-align: center; }
+:is(.play-hud, .player-scores) .standings:has(li:nth-child(5)) :is(.total, small) { grid-column: 1; grid-row: auto; }
+:is(.play-hud, .player-scores) .standings li { border-bottom: 0; border-radius: var(--r-2) var(--r-2) 0 0; padding-bottom: var(--sp-3); }
 .standings small { grid-column: 1; color: var(--muted); font-size: var(--fs-1); }
 .standings .total { grid-column: 2; grid-row: 1 / span 2; }
 .total { font: var(--display-weight) var(--fs-5)/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--primary); }
-.play-hud .total { min-width: 3.4ch; padding: var(--sp-1) var(--sp-3); background: var(--sunk); border: var(--bw) solid var(--line-soft); border-radius: var(--r-1); text-align: center; font-size: calc(var(--fs-6) * var(--k, 1)); }
+:is(.play-hud, .player-scores) .total { min-width: 3.4ch; padding: var(--sp-1) var(--sp-3); background: var(--sunk); border: var(--bw) solid var(--line-soft); border-radius: var(--r-1); text-align: center; font-size: calc(var(--fs-6) * var(--k, 1)); }
 .standings li.current { transform: translateY(-0.625rem); animation: halo 2.2s ease-in-out infinite alternate; }
 @keyframes halo { from { box-shadow: 0 0 0 0.0625rem var(--team), 0 0 1rem color-mix(in srgb, var(--team) 30%, transparent); } to { box-shadow: 0 0 0 0.125rem var(--team), 0 0 3.375rem color-mix(in srgb, var(--team) 70%, transparent); } }
 .standings li.bump .total { animation: bump var(--dur-3) var(--ease-pop); }
@@ -452,20 +497,44 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
   box-shadow: var(--tile-inset), var(--sh-1);
   transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1), filter var(--dur-1);
 }
-.quiz-tile:hover:not(:disabled), .tile:hover:not(:disabled) { transform: scale(1.06); background: var(--tile-bg-hi); box-shadow: 0 0 0 0.125rem var(--primary), 0 0 2.25rem var(--primary); z-index: 1; }
-.quiz-tile:active:not(:disabled), .tile:active:not(:disabled) { transform: scale(0.94); }
-.quiz-tile:disabled, .tile:disabled { background: var(--tile-used-bg); border-color: var(--tile-used-line); color: var(--tile-used-text); box-shadow: none; text-shadow: none; }
+button.quiz-tile:hover:not(:disabled), .tile:hover:not(:disabled) { transform: scale(1.06); background: var(--tile-bg-hi); box-shadow: 0 0 0 0.125rem var(--primary), 0 0 2.25rem var(--primary); z-index: 1; }
+button.quiz-tile:active:not(:disabled), .tile:active:not(:disabled) { transform: scale(0.94); }
+span.quiz-tile { display: grid; place-items: center; }
+.quiz-tile:disabled, span.quiz-tile.used, .tile:disabled { background: var(--tile-used-bg); border-color: var(--tile-used-line); color: var(--tile-used-text); box-shadow: none; text-shadow: none; }
 .quiz-tile.used, .tile.played { display: grid; place-items: center; font-size: var(--fs-4); }
 .view-enter .quiz-tile, .board-enter .tile { animation: tile-in var(--dur-3) var(--ease-out) calc(var(--stagger) * var(--i, 0)) both; transform-origin: 50% 0; }
 
 /* ---------- Sfida delle liste ---------- */
-.list-category { font-size: var(--fs-6); text-align: center; color: var(--tone); }
+.list-category { font: var(--display-weight) var(--fs-6)/var(--display-lh) var(--font-display); text-transform: var(--display-case); letter-spacing: var(--display-track); text-align: center; color: var(--tone); }
 .list-answers { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.375rem), 1fr)); gap: var(--sp-2); align-content: center; }
 .list-answers .button { min-height: 4rem; font-size: var(--fs-4); background: var(--tile-bg); border-color: var(--tile-line); color: var(--tile-text); text-shadow: var(--tile-text-shadow); box-shadow: var(--tile-inset); }
-.list-answers .button:disabled { text-shadow: none; }
-.list-answers .button:disabled { opacity: 1; background: var(--pos); border-color: var(--pos-line); color: var(--on-pos); box-shadow: none; }
+/* Disabilitata con la spunta: risposta già trovata. Disabilitata senza: il turno non è ancora partito. */
+.list-answers .button:disabled:has(.ico) { opacity: 1; background: var(--pos); border-color: var(--pos-line); color: var(--on-pos); box-shadow: none; text-shadow: none; }
 .view-enter .list-answers .button { animation: tile-in var(--dur-3) var(--ease-out) calc(var(--stagger) * var(--i, 0) * 0.5) both; }
+.list-play { display: grid; justify-items: center; gap: var(--sp-2); text-align: center; }
 .list-play .panel-note { text-align: center; margin-inline: auto; }
+.list-team .kicker { font-size: var(--fs-3); }
+.list-team h2 { font-size: var(--fs-6); }
+.view-enter .list-category { animation: rise-in var(--dur-3) var(--ease-out) var(--dur-1) both; }
+
+/* ---------- Karaoke ---------- */
+.song-controls { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: var(--sp-2) var(--sp-4); align-items: center; }
+.song-controls input[type="file"] { width: 100%; min-width: 0; min-height: var(--hit); color: var(--muted); font-size: var(--fs-2); border-radius: var(--r-btn); }
+.song-controls input::file-selector-button { min-height: var(--hit); margin-inline-end: var(--sp-3); padding: 0 var(--sp-5); border: var(--bw) solid var(--line); border-radius: var(--r-btn); background: var(--surface-2); color: var(--text); font: var(--display-weight) var(--fs-3)/1.1 var(--font-display); letter-spacing: 0.04em; text-transform: var(--display-case); cursor: pointer; transition: filter var(--dur-1), background-color var(--dur-1); }
+.song-controls input::file-selector-button:hover { filter: brightness(1.12); }
+/* Senza video la scena è vuota: il caricamento diventa l'azione principale, al centro. */
+.play-content:not(:has(.song-player, .song-scores)) .song-controls { grid-auto-flow: row; grid-template-rows: none; justify-items: center; width: min(100%, 34rem); margin: auto; padding: var(--sp-6); background: var(--sunk); border: var(--bw-strong) dashed var(--line); border-radius: var(--r-2); text-align: center; }
+.play-content:not(:has(.song-player, .song-scores)) .song-controls input::file-selector-button { background: var(--primary); border-color: var(--primary-hi); color: var(--on-primary); }
+.play-content:not(:has(.song-player, .song-scores)) .song-controls label:not(:first-child) { margin-top: var(--sp-3); }
+.song-player { display: block; flex: 1 1 0; width: 100%; min-height: 0; object-fit: contain; background: var(--sunk); border: var(--bw-strong) solid var(--line); border-radius: var(--r-2); box-shadow: var(--glow), inset 0 0 0 0.25rem var(--surface); }
+.view-enter .song-player, .card-enter .song-player { animation: fade-in var(--dur-3) var(--ease-out) both; }
+#song-message:empty { display: none; }
+#song-message { align-self: center; padding: var(--sp-2) var(--sp-4); background: var(--neg); border: var(--bw) solid var(--neg-line); border-radius: var(--r-1); color: var(--on-neg); font-weight: 600; }
+.song-score-team { flex: 1; }
+.song-scores { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(var(--sp-2), 1.4vw, var(--sp-4)); width: min(100%, 64rem); margin-inline: auto; }
+.play-stage .song-scores .button { min-height: clamp(4rem, 16dvh, 9rem); padding: 0; border-radius: var(--r-tile); background: var(--tile-bg); border-color: var(--tile-line); color: var(--tile-text); font-size: var(--fs-7); text-shadow: var(--tile-text-shadow); box-shadow: var(--tile-inset), var(--sh-1); }
+.play-stage .song-scores .button:hover { background: var(--tile-bg-hi); box-shadow: 0 0 0 0.125rem var(--primary), 0 0 2.25rem var(--primary); }
+.view-enter .song-scores .button { animation: tile-in var(--dur-3) var(--ease-out) calc(var(--stagger) * var(--i, 0)) both; }
 .list-pick { flex: 1; display: grid; align-content: center; justify-items: center; gap: var(--sp-5); }
 .list-pick .stage-copy { font-size: var(--fs-4); color: var(--text); }
 .list-pick .button { min-height: 5rem; padding-inline: var(--sp-6); font-size: var(--fs-5); }
@@ -572,15 +641,15 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .quiz-clue-content { min-height: 0; margin-inline: calc(-1 * var(--gutter)); padding: var(--sp-4) var(--gutter); overflow: hidden auto; display: grid; align-content: safe center; justify-items: center; gap: var(--sp-5); text-align: center; overflow-wrap: anywhere; }
 .quiz-clue-content h2 { max-width: 22ch; font-size: var(--fs-7); line-height: 1; text-transform: none; text-shadow: var(--display-shadow); animation: rise-in var(--dur-3) var(--ease-out) var(--dur-1) both; }
 .quiz-clue-content:has(.quiz-photo) h2 { font-size: var(--fs-6); max-width: 32ch; }
-.quiz-clue-content .prompt-card { min-width: min(34rem, 100%); padding: var(--sp-3) var(--sp-7) var(--sp-4); background: var(--primary); color: var(--on-primary); border-color: var(--primary-hi); box-shadow: var(--glow-primary); transform-origin: 50% 0; animation: answer-in var(--dur-show) var(--ease-out) both; }
-.quiz-clue-content .prompt-card .prompt-note { color: var(--on-primary); }
-.quiz-clue-content .prompt-card .prompt { font-size: var(--fs-7); text-transform: var(--display-case); }
-.quiz-clue-content:has(.quiz-photo) .prompt { font-size: var(--fs-6); }
+.quiz-clue-content .presenter-answer { font-size: var(--fs-5); }
+#card-dialog:has([data-action="quiz-correct"]) .presenter-answer, .play-stage .player-answer { background: var(--primary); color: var(--on-primary); border: var(--bw-strong) solid var(--primary-hi); box-shadow: var(--glow-primary); transform-origin: 50% 0; animation: answer-in var(--dur-show) var(--ease-out) both; }
+#card-dialog:has([data-action="quiz-correct"]) .presenter-answer { padding: var(--sp-3) var(--sp-7) var(--sp-4); font: var(--display-weight) var(--fs-6)/1.05 var(--font-display); text-transform: var(--display-case); }
+#card-dialog:has([data-action="quiz-correct"]) .presenter-answer strong, .player-answer .prompt-note { color: var(--on-primary); font-family: var(--font-body); }
 .quiz-active-card { max-width: 46rem; padding: var(--sp-2) var(--sp-4); background: var(--sunk); border: var(--bw) solid var(--line); border-radius: var(--r-1); font-size: var(--fs-2); animation: slide-in var(--dur-3) var(--ease-out) var(--dur-2) both; }
 .quiz-active-card strong { font: var(--display-weight) var(--fs-3)/1 var(--font-display); text-transform: var(--display-case); color: var(--primary); }
 .quiz-photo, .clue-photo { text-align: center; }
 .quiz-photo img, .clue-photo img { display: block; max-width: 100%; max-height: min(42dvh, 30rem); min-height: 7.5rem; margin-inline: auto; border: 0.25rem solid var(--text); border-radius: var(--r-1); background: var(--surface); box-shadow: var(--sh-2); animation: pop-in var(--dur-3) var(--ease-out) both; }
-.quiz-clue-content:has(.prompt-card) .quiz-photo img { max-height: min(28dvh, 18rem); }
+.quiz-clue-content:has(.presenter-answer) .quiz-photo img { max-height: min(28dvh, 18rem); }
 .quiz-clue-content:has(.quiz-photo) { gap: var(--sp-3); }
 .quiz-photo figcaption, .clue-photo figcaption { margin-top: var(--sp-2); font-size: var(--fs-1); color: var(--muted); }
 #card-dialog[data-look="quiz"] > .actions { animation: rise-in var(--dur-3) var(--ease-out) var(--dur-2) both; }
@@ -596,6 +665,74 @@ dialog .quiz-clue-category { margin-bottom: 0; }
 .judge-panel { width: min(47.5rem, 100%); margin: var(--sp-6) auto; display: grid; gap: var(--sp-4); }
 .judge-panel .stage-header { align-items: center; }
 .judge-panel .prompt-card { animation: card-in var(--dur-2) var(--ease-out); }
+#judge-list { display: grid; gap: var(--sp-3); }
+#judge-list .panel-note { margin-inline: auto; text-align: center; }
+
+/* ---------- Schermo giocatori (schermo.html): si guarda da lontano, non si tocca ---------- */
+.player-display { height: 100dvh; overflow: hidden; }
+.player-toolbar { position: fixed; z-index: 4; inset: var(--sp-2) 0 auto; display: grid; justify-items: center; gap: var(--sp-2); pointer-events: none; }
+.player-toolbar > * { pointer-events: auto; }
+.player-toolbar .button { min-height: 2.75rem; padding-inline: var(--sp-4); background: var(--sunk); font-size: var(--fs-2); }
+.player-toolbar .panel-note { max-width: 19rem; padding: var(--sp-2) var(--sp-3); background: var(--sunk); border: var(--bw) solid var(--line-soft); border-radius: var(--r-1); }
+:fullscreen .player-toolbar { display: none; }
+.player-stage { height: 100dvh; min-height: 0; overflow: hidden; }
+.player-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--sp-4); text-align: center; }
+.player-stage .play-content { justify-content: center; gap: var(--sp-4); }
+.player-body:has(> video:not([hidden])) .play-content { flex: none; }
+.player-stage .song-player { border-color: var(--primary); }
+#player-enable-video { align-self: center; min-height: 4rem; font-size: var(--fs-4); }
+#player-media-status { align-self: center; padding: var(--sp-2) var(--sp-4); background: var(--sunk); border: var(--bw) solid var(--line); border-radius: var(--r-1); color: var(--muted); }
+/* Sigla, benvenuto e attesa: stessa scena della finestra di chi conduce. */
+.player-stage .intro-stage { overflow: visible; padding-inline: 0; }
+.player-stage :is(.intro-stage, .results-stage) .stage-header { padding: 0; border: 0; }
+.player-stage .intro-stage .stage-header > .round-icon { display: inline-grid; }
+.player-stage .intro-stage > .stage-copy { font-size: var(--fs-4); }
+.view-enter .player-stage .intro-stage > h1 { animation: title-in var(--dur-show) var(--ease-out) both; }
+.view-enter .player-stage .intro-stage > .stage-copy { animation: rise-in var(--dur-3) var(--ease-out) calc(var(--stagger) * 6) both; }
+/* In gioco: tutto al centro e più grande. */
+.player-stage .turn-box, .player-stage .quiz-meta { align-self: center; }
+.player-stage .quiz-meta { justify-content: center; }
+.player-stage .cards-progress { align-self: center; width: min(100%, 36rem); }
+.player-stage .play-content > .kicker { font-size: var(--fs-4); }
+.player-stage .prompt { max-width: 26ch; font-size: min(calc(var(--fs-7) * 1.35), 11dvh); }
+.player-stage.tone-quiz .prompt { max-width: 30ch; font-size: min(calc(var(--fs-7) * 1.1), 8dvh); }
+.player-stage .prompt-card:has(> .prompt:only-child), .player-stage p.prompt-card { min-height: 0; }
+.player-stage .player-answer { flex: none; align-self: center; min-width: min(34rem, 100%); max-width: 100%; margin-block: var(--sp-2) var(--sp-4); padding-block: var(--sp-3) var(--sp-4); }
+.player-stage.tone-quiz .play-content:has(> .player-answer) > .prompt-card:not(.player-answer) .prompt { font-size: min(var(--fs-6), 6dvh); }
+/* Karaoke senza video in onda: resta solo la squadra, quindi la squadra riempie la scena. */
+.player-stage .play-content > .turn-box:only-child .turn-line { flex-direction: column; gap: var(--sp-2); padding: var(--sp-4) var(--sp-7) var(--sp-5); }
+.player-stage .play-content > .turn-box:only-child .turn-line > span:first-child { padding: 0; font-size: var(--fs-4); }
+.player-stage .play-content > .turn-box:only-child .team-label { font-size: var(--fs-8); }
+.player-body:has(> video:not([hidden])) .play-content > .turn-box:only-child .turn-line { flex-direction: row; gap: var(--sp-3); padding: var(--sp-1) var(--sp-5) var(--sp-1) var(--sp-4); }
+.player-body:has(> video:not([hidden])) .play-content > .turn-box:only-child .turn-line > span:first-child { font-size: var(--fs-1); }
+.player-body:has(> video:not([hidden])) .play-content > .turn-box:only-child .team-label { font-size: var(--fs-5); }
+.player-stage .player-answer .prompt { text-transform: var(--display-case); }
+.player-stage .list-team h2 { font-size: var(--fs-8); }
+.player-stage .list-team .kicker { font-size: var(--fs-4); }
+.player-stage .list-play { flex: 1; align-content: center; gap: var(--sp-4); }
+.player-stage .list-play .panel-note { font-size: var(--fs-4); }
+.player-stage .list-pick .stage-copy { font: var(--display-weight) var(--fs-6)/var(--display-lh) var(--font-display); text-transform: var(--display-case); max-width: 22ch; }
+.player-stage .results-stage > .standings { font-size: var(--fs-4); }
+.player-stage .list-category { font-size: var(--fs-7); }
+.player-stage .feedback { font-size: var(--fs-4); }
+.player-stage .quiz-photo img { max-height: min(38dvh, 34rem); }
+.player-stage .play-content:has(> .quiz-photo) > .prompt-card { flex: none; padding: var(--sp-4); }
+.player-stage.tone-quiz .play-content:has(> .quiz-photo) .prompt { font-size: min(var(--fs-6), 6dvh); }
+@media (min-width: 47.5em) and (min-aspect-ratio: 1/1) {
+  .player-stage .play-content:has(> .quiz-photo) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; align-content: center; }
+  .player-stage .play-content:has(> .quiz-photo) > :is(.turn-box, .kicker) { grid-column: 1 / -1; justify-self: center; }
+  .player-stage .play-content:has(> .quiz-photo) > .prompt-card { grid-column: 1; }
+  .player-stage .play-content:has(> .quiz-photo) > .quiz-photo { grid-column: 2; grid-row: 3 / span 2; }
+  .player-stage .quiz-photo img { max-height: min(50dvh, 40rem); }
+}
+/* Risultati e classifica. */
+.player-stage .results-stage { align-self: center; width: min(66rem, 100%); }
+.player-stage .results-stage .stage-header { justify-content: center; }
+.player-stage .results-stage .stage-header > .round-icon { display: none; }
+.player-stage .results-stage > .stage-copy { align-self: center; font-size: var(--fs-4); }
+.player-stage .result-row { text-align: start; }
+.view-enter .results-stage h1 { animation: title-in var(--dur-show) var(--ease-out) both; }
+.player-scores .standings li { text-align: start; }
 
 /* ---------- Solo quiz ---------- */
 .shell { flex: 1; padding-block: var(--sp-5) var(--sp-5); }
@@ -651,22 +788,31 @@ dialog .quiz-clue-category { margin-bottom: 0; }
   .game-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: start; }
   .sidebar:has(#setup:not([hidden])) { grid-row: 1; }
-  .play-hud .total { font-size: var(--fs-5); }
+  :is(.play-hud, .player-scores) .total { font-size: var(--fs-5); }
 }
 @media (max-width: 35em) {
   .team-start { position: static; }
   .stage-header { align-items: flex-start; }
-  .play-stage .stage-header h1 { font-size: var(--fs-5); }
+  .play-stage .stage-header h1 { font-size: var(--fs-5); overflow-wrap: anywhere; }
+  .play-stage .stage-header > div:first-child { min-width: 0; }
+  /* Titolo e timer sulla stessa riga anche con i nomi di manche lunghi. */
+  .play-stage .stage-header:has(.timer) h1 { font-size: var(--fs-4); }
+  .timer { min-width: 0; font-size: var(--fs-6); }
+  .song-player { flex: none; height: 56vw; }
   .round-order-list li { grid-template-columns: auto minmax(0, 1fr) auto; }
   .round-order-list .round-icon { display: none; }
   .roadmap li { flex-direction: column; justify-content: center; gap: 0.125rem; padding: var(--sp-1); text-align: center; font-size: 0.7rem; }
   .play-stage { padding-bottom: calc(var(--hit) + var(--sp-5)); }
   .play-hud { display: grid; grid-template-columns: minmax(0, 1fr); padding-inline-end: 0; }
-  .play-hud .reset { justify-self: start; }
-  .standings, .play-hud .standings { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+  .play-hud .presenter-actions { flex-direction: row; justify-content: flex-start; }
+  .play-hud .presenter-actions .button { flex: 0 1 auto; }
+  .song-controls { grid-auto-flow: row; grid-template-rows: none; }
+  .song-scores { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .correction-notice .button { flex: 1 1 100%; }
+  .standings, :is(.play-hud, .player-scores) .standings { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
   .standings li.current { transform: none; }
-  .standings li, .play-hud .standings li { padding: var(--sp-2); border-bottom: var(--bw) solid var(--line); border-radius: var(--r-1); }
-  .play-hud .total, .total { font-size: var(--fs-4); min-width: 0; padding-inline: var(--sp-2); }
+  .standings li, :is(.play-hud, .player-scores) .standings li { padding: var(--sp-2); border-bottom: var(--bw) solid var(--line); border-radius: var(--r-1); }
+  :is(.play-hud, .player-scores) .total, .total { font-size: var(--fs-4); min-width: 0; padding-inline: var(--sp-2); }
   .result-row .team-label, .final-table .winner .team-label { font-size: var(--fs-3); }
   .result-values .total, .result-place { font-size: var(--fs-4); }
   .final-table .result-row.winner { padding-block: var(--sp-4); }

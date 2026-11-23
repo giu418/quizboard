@@ -1,7 +1,8 @@
 const languageStorage = "quizboard-language";
+const languageToggle = document.querySelector("[data-language-toggle]:not([hidden])");
 let language = "it";
 try {
-  if (localStorage.getItem(languageStorage) === "en") language = "en";
+  if (languageToggle && localStorage.getItem(languageStorage) === "en") language = "en";
 } catch {
   // The selector still works if browser storage is unavailable.
 }
@@ -20,6 +21,8 @@ const icons = {
   restart: "M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5",
   sound: "M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11",
   mute: "M4 9h4l5-4v14l-5-4H4zM16.5 9.5l5 5M21.5 9.5l-5 5",
+  grip: "M5 7h14M5 12h14M5 17h14",
+  screen: "M3 5h18v11H3zM8 20h8M12 16v4",
 };
 const ico = (name) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${icons[name]}"/></svg>`;
 
@@ -57,13 +60,13 @@ function renderLanguage() {
 }
 
 function setLanguage(next) {
-  if (language === next) return;
+  if (!languageToggle || language === next) return;
   language = next;
   renderLanguage();
   window.dispatchEvent(new Event("quizboard-language"));
 }
 
-document.querySelector("[data-language-toggle]").addEventListener("click", () => {
+languageToggle?.addEventListener("click", () => {
   setLanguage(tr("en", "it"));
   try {
     localStorage.setItem(languageStorage, language);

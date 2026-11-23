@@ -9,16 +9,17 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title data-i18n>Serata giochi · Quizboard</title>
-  <link rel="stylesheet" href="ui.css?v=fluido">
-  <link rel="stylesheet" href="theme.css?v=fluido">
-  <script src="english-text.js?v=squadre" defer></script>
+  <link rel="stylesheet" href="ui.css?v=due-schermi">
+  <link rel="stylesheet" href="theme.css?v=due-schermi">
+  <script src="english-text.js?v=due-schermi" defer></script>
   <script src="english-content.js?v=photos" defer></script>
-  <script src="language.js" defer></script>
+  <script src="language.js?v=due-schermi" defer></script>
   <script src="mintaka.js" defer></script>
   <script src="photo-questions.js" defer></script>
-  <script src="party-data.js?v=squadre" defer></script>
-  <script src="party.js?v=squadre" defer></script>
-  <script src="sound.js" defer></script>
+  <script src="party-data.js?v=due-schermi" defer></script>
+  <script src="presentation.js" defer></script>
+  <script src="party.js?v=due-schermi" defer></script>
+  <script src="sound.js?v=due-schermi" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -28,9 +29,10 @@
         Quizboard
       </a>
       <nav aria-label="Modalità di gioco" data-i18n-attrs="aria-label">
-        <a class="standalone" href="./quiz.html"><span data-i18n>Solo quiz</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg></a>
+        <a class="button secondary display-link" id="display-link" href="./schermo.html" target="quizboard-player"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg> <span data-i18n>Apri schermo giocatori</span></a>
+        <a class="standalone" href="./quiz.html" hidden><span data-i18n>Solo quiz</span> <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg></a>
         <button data-i18n type="button" class="button secondary reset" data-action="ask-reset" id="reset-button" hidden>Nuova serata</button>
-        <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English">EN</button>
+        <button type="button" class="language-toggle" data-language-toggle lang="en" aria-label="Switch to English" hidden>EN</button>
       </nav>
     </div>
   </header>

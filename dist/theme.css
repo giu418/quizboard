@@ -239,13 +239,13 @@
 .quiz-column h2, .category h2 { background: transparent; color: var(--primary); border-bottom: var(--bw) solid var(--line-soft); border-radius: 0; font-family: var(--font-body); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
 .hero h1 span { display: inline-block; transform: rotate(-3deg); margin-bottom: 0.14em; }
 .prompt-card, .flash-question { border-color: var(--primary); }
-.quiz-clue-content .prompt-card { --answer-tilt: -2deg; transform: rotate(var(--answer-tilt)); }
+#card-dialog:has([data-action="quiz-correct"]) .presenter-answer, .play-stage .player-answer { --answer-tilt: -2deg; transform: rotate(var(--answer-tilt)); }
 /* Shrikhand è più largo di un condensato: numeri e parole lunghe scendono di corpo. */
 .quiz-tile { font-size: clamp(1.05rem, 3.6vw, 3.2rem); } /* lascia posto alle due file di lampadine */
 .board .tile { font-size: clamp(0.8rem, 2.5vw, 2.3rem); }
 .list-answers .button { font-size: clamp(0.95rem, 1.5vw, 1.35rem); padding-inline: var(--sp-2); }
-.play-hud .total { font-size: calc(clamp(1.25rem, 2.6vw, 2.25rem) * var(--k, 1)); }
-.play-hud .standings:has(li:nth-child(5)) .total { font-size: clamp(1.1rem, 1.9vw, 1.75rem); } /* nome sopra, punteggio sotto: c'è più spazio */
+:is(.play-hud, .player-scores) .total { font-size: calc(clamp(1.25rem, 2.6vw, 2.25rem) * var(--k, 1)); }
+:is(.play-hud, .player-scores) .standings:has(li:nth-child(5)) .total { font-size: clamp(1.1rem, 1.9vw, 1.75rem); } /* nome sopra, punteggio sotto: c'è più spazio */
 .result-row { border-left-width: 0.875rem; }
 
 /* Ingresso delle tessere: le lampade si accendono sfarfallando. */

@@ -373,7 +373,7 @@ progress::-moz-progress-bar { background: var(--tone, var(--primary)); }
 .turn-ready { flex: 1; display: grid; grid-template-rows: minmax(min-content, 1fr) auto; gap: var(--sp-5); text-align: center; padding-bottom: var(--sp-4); }
 .turn-ready-team { display: grid; align-content: center; justify-items: center; gap: var(--sp-3); min-width: 0; }
 .turn-ready-team .kicker { font-size: var(--fs-4); }
-.turn-ready-team h2 { font-size: var(--fs-8); max-width: 100%; }
+.turn-ready-team h2 { font-size: min(var(--fs-8), 11.5dvh); max-width: 100%; } /* il tetto in altezza tiene in schermo anche i nomi su due righe */
 .turn-ready-team .team-label { padding: 0.04em 0.3em; background: var(--team); color: var(--on-team); font-weight: var(--display-weight); clip-path: polygon(0.18em 0, 100% 0, calc(100% - 0.18em) 100%, 0 100%); }
 .turn-ready-team .team-dot { display: none; }
 .turn-ready-controls { display: grid; justify-items: center; gap: var(--sp-3); }
